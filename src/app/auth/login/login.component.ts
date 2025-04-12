@@ -20,7 +20,7 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      // Aqui você faria a chamada à API de autenticação
+      
       console.log(this.loginForm.value);
     } else {
       console.log('Formulário inválido');
