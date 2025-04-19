@@ -22,7 +22,7 @@ ShoppMate is a web application for managing shopping lists, built with Angular a
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/omatheusmesmo/ShoppMateFront.git 
+git clone https://github.com/omatheusmesmo/ShoppMateFront.git
 cd shopp-mate-front
 ```
 
