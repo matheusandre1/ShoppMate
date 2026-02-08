@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+
+// TODO: use DTOs instead of entity
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -21,12 +23,15 @@ public class UserController {
     @Autowired
     UserDetailsService userDetailsService;
 
+    // TODO: Corrigir erro: org.springframework.web.servlet.resource.NoResourceFoundException: No static resource users.
+    // O mapeamento atual está gerando /users/users em vez de /users.
     @Operation(summary = "Return all users")
     @GetMapping("/users")
     public List<User> getUsers() {
         return userService.findUsers();
     }
 
+    // TODO: maybe remove the "/userDetailsService/" to avoid redundancy
     @Operation(summary = "Return a user by id")
     @GetMapping("/userDetailsService/{id}")
     public User getUser(@PathVariable Long id) {

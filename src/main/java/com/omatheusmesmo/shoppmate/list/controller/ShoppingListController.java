@@ -2,7 +2,7 @@ package com.omatheusmesmo.shoppmate.list.controller;
 
 import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListRequestDTO;
 import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListResponseDTO;
-import com.omatheusmesmo.shoppmate.list.dtos.UpdateShoppingListRequestDTO;
+import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListUpdateRequestDTO;
 import com.omatheusmesmo.shoppmate.list.entity.ShoppingList;
 import com.omatheusmesmo.shoppmate.list.mapper.ListMapper;
 import com.omatheusmesmo.shoppmate.list.service.ShoppingListService;
@@ -18,6 +18,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+
+// TODO: return only lists owned by the user or that are shared with him
 @RestController
 @RequestMapping("/lists")
 public class ShoppingListController {
@@ -74,7 +76,7 @@ public class ShoppingListController {
     @PutMapping("/{id}")
     public ResponseEntity<ShoppingListResponseDTO> updateShoppingList(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateShoppingListRequestDTO requestDTO
+            @Valid @RequestBody ShoppingListUpdateRequestDTO requestDTO
     ) {
 
         ShoppingList existingList = service.findListById(id);

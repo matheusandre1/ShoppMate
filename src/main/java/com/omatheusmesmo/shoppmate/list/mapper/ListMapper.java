@@ -2,7 +2,7 @@ package com.omatheusmesmo.shoppmate.list.mapper;
 
 import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListRequestDTO;
 import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListResponseDTO;
-import com.omatheusmesmo.shoppmate.list.dtos.UpdateShoppingListRequestDTO;
+import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListUpdateRequestDTO;
 import com.omatheusmesmo.shoppmate.list.entity.ShoppingList;
 import com.omatheusmesmo.shoppmate.user.dtos.UserResponseDTO;
 import com.omatheusmesmo.shoppmate.user.entity.User;
@@ -50,7 +50,7 @@ public class ListMapper {
         );
     }
 
-    public void updateEntityFromDto(UpdateShoppingListRequestDTO dto, ShoppingList entity) {
+    public void updateEntityFromDto(ShoppingListUpdateRequestDTO dto, ShoppingList entity) {
         if (dto == null || entity == null) {
             return;
         }

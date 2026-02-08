@@ -1,7 +1,7 @@
 package com.omatheusmesmo.shoppmate.auth.controller;
 
 import com.omatheusmesmo.shoppmate.user.dtos.UserResponseDTO;
-import com.omatheusmesmo.shoppmate.utils.dtos.LoginRequest;
+import com.omatheusmesmo.shoppmate.auth.dtos.LoginRequest;
 import com.omatheusmesmo.shoppmate.user.entity.User;
 import com.omatheusmesmo.shoppmate.auth.service.JwtService;
 import com.omatheusmesmo.shoppmate.user.service.UserService;

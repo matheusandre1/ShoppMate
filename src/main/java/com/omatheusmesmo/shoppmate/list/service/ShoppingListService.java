@@ -52,7 +52,7 @@ public class ShoppingListService {
         return shoppingListRepository.findById(id)
                 .orElseThrow(()-> new NoSuchElementException("ShoppingList not found"));
     }
-
+    // TODO: implement soft delete?
     public void removeList(Long id) {
         findListById(id);
         shoppingListRepository.deleteById(id);
