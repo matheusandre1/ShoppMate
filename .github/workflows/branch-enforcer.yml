@@ -27,23 +27,34 @@ jobs:
               
               const isOwner = association === 'OWNER';
 
-              if (targetBranch === 'main' && !isOwner && sourceBranch !== 'develop') {
-                console.log(`⚠️ Redirecting PR from ${targetBranch} to develop for user ${author}`);
-                
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: pr.number,
-                  body: `🤖 **Attention @${author}!** To keep our project organized, only the repository owner can target the 'main' branch directly. I've automatically updated your PR to target 'develop' instead. Thank you! 🚀`
-                });
-                
-                await github.rest.pulls.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: pr.number,
-                  base: 'develop'
-                });
+              // Rule: Only Owner can target 'main', and it MUST come from 'develop'
+              if (targetBranch === 'main') {
+                if (!isOwner || sourceBranch !== 'develop') {
+                  console.log(`⚠️ Redirecting PR #${pr.number} from ${targetBranch} to develop. Reason: Restricted access or invalid source branch.`);
+                  
+                  let message = `🤖 **Attention @${author}!** `;
+                  if (!isOwner) {
+                    message += `Only the repository owner can target the 'main' branch directly.`;
+                  } else {
+                    message += `To maintain a clean history, PRs to 'main' must originate from the 'develop' branch.`;
+                  }
+                  message += ` I've automatically updated your PR to target 'develop' instead. Thank you! 🚀`;
+
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: pr.number,
+                    body: message
+                  });
+                  
+                  await github.rest.pulls.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: pr.number,
+                    base: 'develop'
+                  });
+                }
               }
             } catch (error) {
-              console.error("❌ Error:", error);
+              console.error("❌ Error processing branch enforcement:", error);
             }
