@@ -15,11 +15,11 @@ import lombok.Setter;
 @Table(name = "items")
 public class Item extends DomainEntity {
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_category", nullable = false)
     private Category category;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_unit", nullable = false)
     private Unit unit;
 }
