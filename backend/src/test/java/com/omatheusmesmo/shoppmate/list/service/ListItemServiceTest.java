@@ -10,6 +10,7 @@ import com.omatheusmesmo.shoppmate.list.entity.ShoppingList;
 import com.omatheusmesmo.shoppmate.list.mapper.ListItemMapper;
 import com.omatheusmesmo.shoppmate.list.repository.ListItemRepository;
 import com.omatheusmesmo.shoppmate.shared.service.AuditService;
+import com.omatheusmesmo.shoppmate.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -43,6 +44,7 @@ class ListItemServiceTest {
     private Item item;
     private ShoppingList shoppingList;
     private ListItem listItem;
+    private User user;
 
     @BeforeEach
     void setUp() {
@@ -52,8 +54,12 @@ class ListItemServiceTest {
         item = new Item();
         item.setId(1L);
 
+        user = new User();
+        user.setId(1L);
+
         shoppingList = new ShoppingList();
         shoppingList.setId(1L);
+        shoppingList.setOwner(user);
 
         listItem = new ListItem();
         listItem.setId(1L);
@@ -70,7 +76,7 @@ class ListItemServiceTest {
         when(listItemMapper.toEntity(listItemRequestDTO, item, shoppingList)).thenReturn(listItem);
         when(listItemRepository.save(listItem)).thenReturn(listItem);
 
-        ListItem savedItem = service.addShoppItemList(listItemRequestDTO);
+        ListItem savedItem = service.addShoppItemList(listItemRequestDTO, user);
 
         assertNotNull(savedItem);
         assertEquals(savedItem, listItem);
@@ -102,7 +108,7 @@ class ListItemServiceTest {
     void findListItem() {
         when(listItemRepository.findByIdAndDeletedFalse(listItem.getId())).thenReturn(Optional.of(listItem));
 
-        ListItem result = service.findListItemById(listItem.getId());
+        ListItem result = service.findListItemById(listItem.getId(), user);
 
         assertNotNull(result);
 
@@ -113,7 +119,7 @@ class ListItemServiceTest {
     void findListItemById() {
         when(listItemRepository.findByIdAndDeletedFalse(listItem.getId())).thenReturn(Optional.of(listItem));
 
-        ListItem result = service.findListItemById(listItem.getId());
+        ListItem result = service.findListItemById(listItem.getId(), user);
 
         assertNotNull(result);
 
@@ -124,7 +130,7 @@ class ListItemServiceTest {
     void findListItemById_WhenItemNotFound() {
         when(listItemRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> service.findListItemById(999L));
+        assertThrows(NoSuchElementException.class, () -> service.findListItemById(999L, user));
 
         verify(listItemRepository, never()).save(any());
     }
@@ -133,7 +139,7 @@ class ListItemServiceTest {
     void removeList_Ok() {
         when(listItemRepository.findByIdAndDeletedFalse(listItem.getId())).thenReturn(Optional.of(listItem));
 
-        assertDoesNotThrow(() -> service.removeList(listItem.getId()));
+        assertDoesNotThrow(() -> service.removeList(listItem.getId(), user));
 
         verify(listItemRepository, times(1)).save(listItem);
         verify(auditService, times(1)).softDelete(listItem);
@@ -143,7 +149,7 @@ class ListItemServiceTest {
     void removeList_ItemNotFound() {
         when(listItemRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> service.removeList(999L));
+        assertThrows(NoSuchElementException.class, () -> service.removeList(999L, user));
 
         verify(listItemRepository, never()).save(any());
         verify(auditService, never()).softDelete(any());
@@ -154,7 +160,7 @@ class ListItemServiceTest {
         ListItemUpdateRequestDTO updateDTO = new ListItemUpdateRequestDTO(1L, 1L, 3, true, BigDecimal.valueOf(10.0));
         when(listItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(listItem));
 
-        ListItem result = service.editList(1L, updateDTO);
+        ListItem result = service.editList(1L, updateDTO, user);
 
         assertNotNull(result);
         assertEquals(3, result.getQuantity());
@@ -170,7 +176,7 @@ class ListItemServiceTest {
         ListItemUpdateRequestDTO updateDTO = new ListItemUpdateRequestDTO(1L, 1L, 3, true, BigDecimal.valueOf(20.0));
         when(listItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> service.editList(1L, updateDTO));
+        assertThrows(NoSuchElementException.class, () -> service.editList(1L, updateDTO, user));
 
         verify(listItemRepository, times(1)).findByIdAndDeletedFalse(1L);
     }
@@ -178,13 +184,15 @@ class ListItemServiceTest {
     @Test
     void findAll() {
         when(listItemRepository.findByShoppListIdAndDeletedFalse(1L)).thenReturn(List.of(listItem));
+        doNothing().when(shoppingListService).verifyOwnership(anyLong(), any(User.class));
 
-        List<ListItem> result = service.findAll(1L);
+        List<ListItem> result = service.findAll(1L, user);
 
         assertNotNull(result);
         assertEquals(1, result.size());
 
         verify(listItemRepository, times(1)).findByShoppListIdAndDeletedFalse(1L);
+        verify(shoppingListService, times(1)).verifyOwnership(1L, user);
     }
 
     private ListItemRequestDTO createSampleItem() {
