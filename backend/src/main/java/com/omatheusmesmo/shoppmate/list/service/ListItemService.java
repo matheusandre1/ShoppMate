@@ -9,6 +9,8 @@ import com.omatheusmesmo.shoppmate.list.mapper.ListItemMapper;
 import com.omatheusmesmo.shoppmate.list.repository.ListItemRepository;
 import com.omatheusmesmo.shoppmate.item.service.ItemService;
 import com.omatheusmesmo.shoppmate.shared.service.AuditService;
+import com.omatheusmesmo.shoppmate.user.entity.User;
+import com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,9 +38,13 @@ public class ListItemService {
         this.listItemMapper = listItemMapper;
     }
 
-    public ListItem addShoppItemList(ListItemRequestDTO listItemRequestDTO) {
+    public ListItem addShoppItemList(ListItemRequestDTO listItemRequestDTO, User user) {
         Item item = itemService.findById(listItemRequestDTO.itemId());
         ShoppingList shoppingList = shoppingListService.findListById(listItemRequestDTO.listId());
+
+        if (!shoppingList.getOwner().getId().equals(user.getId())) {
+            throw new ResourceOwnershipException("You can only add items to your own shopping lists");
+        }
 
         ListItem listItem = listItemMapper.toEntity(listItemRequestDTO, item, shoppingList);
 
@@ -61,19 +67,25 @@ public class ListItemService {
         }
     }
 
-    public ListItem findListItemById(Long id) {
-        return ListItemRepository.findByIdAndDeletedFalse(id)
+    public ListItem findListItemById(Long id, User user) {
+        ListItem listItem = ListItemRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NoSuchElementException("ListItem not found"));
+
+        if (!listItem.getShoppList().getOwner().getId().equals(user.getId())) {
+            throw new ResourceOwnershipException("You do not have permission to access this item");
+        }
+
+        return listItem;
     }
 
-    public void removeList(Long id) {
-        ListItem deletedItem = findListItemById(id);
+    public void removeList(Long id, User user) {
+        ListItem deletedItem = findListItemById(id, user);
         auditService.softDelete(deletedItem);
         ListItemRepository.save(deletedItem);
     }
 
-    public ListItem editList(Long id, ListItemUpdateRequestDTO listItemUpdateRequestDTO) {
-        ListItem existingListItem = findListItemById(id);
+    public ListItem editList(Long id, ListItemUpdateRequestDTO listItemUpdateRequestDTO, User user) {
+        ListItem existingListItem = findListItemById(id, user);
 
         existingListItem.setQuantity(listItemUpdateRequestDTO.quantity());
         existingListItem.setPurchased(listItemUpdateRequestDTO.purchased());
@@ -84,7 +96,8 @@ public class ListItemService {
         return existingListItem;
     }
 
-    public List<ListItem> findAll(Long idList) {
+    public List<ListItem> findAll(Long idList, User user) {
+        shoppingListService.verifyOwnership(idList, user);
         return ListItemRepository.findByShoppListIdAndDeletedFalse(idList);
     }
 }
