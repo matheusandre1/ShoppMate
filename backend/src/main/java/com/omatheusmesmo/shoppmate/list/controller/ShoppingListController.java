@@ -6,11 +6,13 @@ import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListUpdateRequestDTO;
 import com.omatheusmesmo.shoppmate.list.entity.ShoppingList;
 import com.omatheusmesmo.shoppmate.list.mapper.ListMapper;
 import com.omatheusmesmo.shoppmate.list.service.ShoppingListService;
+import com.omatheusmesmo.shoppmate.user.entity.User;
 import com.omatheusmesmo.shoppmate.utils.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -31,18 +33,20 @@ public class ShoppingListController {
         this.listMapper = listMapper;
     }
 
-    @Operation(description = "Return all Shopping Lists")
+    @Operation(description = "Return all Shopping Lists owned by or shared with the authenticated user")
     @GetMapping
-    public ResponseEntity<List<ShoppingListResponseDTO>> getAllShoppingLists() {
-        List<ShoppingList> shoppingLists = service.findAll();
+    public ResponseEntity<List<ShoppingListResponseDTO>> getAllShoppingLists(@AuthenticationPrincipal User user) {
+        List<ShoppingList> shoppingLists = service.findAllByUser(user);
 
         List<ShoppingListResponseDTO> responseDTOs = shoppingLists.stream().map(listMapper::toResponseDTO).toList();
         return HttpResponseUtil.ok(responseDTOs);
     }
 
-    @Operation(description = "Return a Shopping List by ID")
+    @Operation(description = "Return a Shopping List by ID (only if owned by or shared with authenticated user)")
     @GetMapping("/{id}")
-    public ResponseEntity<ShoppingListResponseDTO> getShoppingListById(@PathVariable Long id) {
+    public ResponseEntity<ShoppingListResponseDTO> getShoppingListById(@PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        service.verifyOwnership(id, user);
         ShoppingList shoppingList = service.findListById(id);
         ShoppingListResponseDTO responseDTO = listMapper.toResponseDTO(shoppingList);
         return HttpResponseUtil.ok(responseDTO);
@@ -50,13 +54,16 @@ public class ShoppingListController {
 
     @Operation(summary = "Add a new Shopping List")
     @PostMapping
-    public ResponseEntity<ShoppingListResponseDTO> addShoppingList(@Valid @RequestBody ShoppingListRequestDTO dto) {
-        ShoppingList shoppingList = listMapper.toEntity(dto);
+    public ResponseEntity<ShoppingListResponseDTO> addShoppingList(
+        @Valid @RequestBody ShoppingListRequestDTO dto,
+        @AuthenticationPrincipal User user
+    ) {
+        ShoppingList shoppingList = listMapper.toEntity(dto, user);
         ShoppingList savedList = service.saveList(shoppingList);
         ShoppingListResponseDTO responseDTO = listMapper.toResponseDTO(savedList);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(savedList.getId())
-                .toUri();
+            .toUri();
 
         return ResponseEntity.created(location).body(responseDTO);
     }
@@ -64,20 +71,21 @@ public class ShoppingListController {
     @Operation(summary = "Delete a Shopping List by id")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteShoppingList(@PathVariable Long id) {
-        service.removeList(id);
+    public void deleteShoppingList(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        service.removeList(id, user);
     }
 
     @Operation(summary = "Update a Shopping List")
     @PutMapping("/{id}")
     public ResponseEntity<ShoppingListResponseDTO> updateShoppingList(@PathVariable Long id,
-            @Valid @RequestBody ShoppingListUpdateRequestDTO requestDTO) {
+            @Valid @RequestBody ShoppingListUpdateRequestDTO requestDTO,
+            @AuthenticationPrincipal User user) {
 
         ShoppingList existingList = service.findListById(id);
 
         listMapper.updateEntityFromDto(requestDTO, existingList);
 
-        ShoppingList updatedList = service.editList(existingList);
+        ShoppingList updatedList = service.editList(existingList, user);
 
         ShoppingListResponseDTO responseDTO = listMapper.toResponseDTO(updatedList);
 

@@ -7,10 +7,12 @@ import com.omatheusmesmo.shoppmate.list.dtos.ListItemUpdateRequestDTO;
 import com.omatheusmesmo.shoppmate.list.entity.ListItem;
 import com.omatheusmesmo.shoppmate.list.mapper.ListItemMapper;
 import com.omatheusmesmo.shoppmate.list.service.ListItemService;
+import com.omatheusmesmo.shoppmate.user.entity.User;
 import com.omatheusmesmo.shoppmate.utils.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -32,9 +34,10 @@ public class ListItemController {
 
     @Operation(summary = "Get a specific ListItem by its ID within a ShoppingList")
     @GetMapping("/{id}")
-    public ResponseEntity<ListItemResponseDTO> getListItemById(@PathVariable Long id) {
+    public ResponseEntity<ListItemResponseDTO> getListItemById(@PathVariable Long id,
+            @AuthenticationPrincipal User user) {
 
-        ListItem listItem = service.findListItemById(id);
+        ListItem listItem = service.findListItemById(id, user);
 
         ListItemResponseDTO responseDTO = listItemMapper.toResponseDTO(listItem);
         return HttpResponseUtil.ok(responseDTO);
@@ -42,8 +45,9 @@ public class ListItemController {
 
     @Operation(description = "Return all ListItems for a specific ShoppingList")
     @GetMapping
-    public ResponseEntity<List<ListItemSummaryDTO>> getAllListItemsByListId(@PathVariable Long listId) {
-        List<ListItem> listItems = service.findAll(listId);
+    public ResponseEntity<List<ListItemSummaryDTO>> getAllListItemsByListId(@PathVariable Long listId,
+            @AuthenticationPrincipal User user) {
+        List<ListItem> listItems = service.findAll(listId, user);
 
         List<ListItemSummaryDTO> responseDTOs = listItems.stream().map(listItemMapper::toSummaryDTO).toList();
 
@@ -52,8 +56,9 @@ public class ListItemController {
 
     @Operation(summary = "Add a new ListItem")
     @PostMapping
-    public ResponseEntity<ListItemResponseDTO> addListItem(@Valid @RequestBody ListItemRequestDTO requestDTO) {
-        ListItem addedListItem = service.addShoppItemList(requestDTO);
+    public ResponseEntity<ListItemResponseDTO> addListItem(@Valid @RequestBody ListItemRequestDTO requestDTO,
+            @AuthenticationPrincipal User user) {
+        ListItem addedListItem = service.addShoppItemList(requestDTO, user);
         ListItemResponseDTO responseDTO = listItemMapper.toResponseDTO(addedListItem);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
@@ -64,18 +69,19 @@ public class ListItemController {
 
     @Operation(summary = "Delete a ListItem by id")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteListItem(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteListItem(@PathVariable Long id, @AuthenticationPrincipal User user) {
 
-        service.removeList(id);
+        service.removeList(id, user);
         return HttpResponseUtil.noContent();
     }
 
     @Operation(summary = "Update a ListItem")
     @PutMapping("/{id}")
     public ResponseEntity<ListItemResponseDTO> updateListItem(@PathVariable Long id,
-            @Valid @RequestBody ListItemUpdateRequestDTO requestDTO) {
+            @Valid @RequestBody ListItemUpdateRequestDTO requestDTO,
+            @AuthenticationPrincipal User user) {
 
-        ListItem updatedListItem = service.editList(id, requestDTO);
+        ListItem updatedListItem = service.editList(id, requestDTO, user);
 
         ListItemResponseDTO responseDTO = listItemMapper.toResponseDTO(updatedListItem);
         return HttpResponseUtil.ok(responseDTO);
