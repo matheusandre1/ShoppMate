@@ -6,6 +6,7 @@ import com.omatheusmesmo.shoppmate.list.entity.ShoppingList;
 import com.omatheusmesmo.shoppmate.list.repository.ShoppingListRepository;
 import com.omatheusmesmo.shoppmate.user.service.UserService;
 import com.omatheusmesmo.shoppmate.shared.service.AuditService;
+import com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -59,13 +60,23 @@ public class ShoppingListService {
     }
 
     // TODO: implement soft delete?
-    public void removeList(Long id) {
-        findListById(id);
+    public void removeList(Long id, User currentLoggedUser) {
+        ShoppingList shoppingList = findListById(id);
+
+        if (!shoppingList.getOwner().getId().equals(currentLoggedUser.getId())) {
+            throw new ResourceOwnershipException("You can only delete your own shopping lists!");
+        }
+
         shoppingListRepository.deleteById(id);
     }
 
-    public ShoppingList editList(ShoppingList ShoppingList) {
-        findListById(ShoppingList.getId());
+    public ShoppingList editList(ShoppingList ShoppingList, User currentLoggedUser) {
+        ShoppingList existingList = findListById(ShoppingList.getId());
+
+        if (!existingList.getOwner().getId().equals(currentLoggedUser.getId())) {
+            throw new ResourceOwnershipException("You can only edit your own shopping lists!");
+        }
+
         isListValid(ShoppingList);
         auditService.setAuditData(ShoppingList, false);
         shoppingListRepository.save(ShoppingList);
@@ -74,5 +85,17 @@ public class ShoppingListService {
 
     public List<ShoppingList> findAll() {
         return shoppingListRepository.findAll();
+    }
+
+    public List<ShoppingList> findAllByUser(User user) {
+        return shoppingListRepository.findByOwnerIdAndDeletedFalse(user.getId());
+    }
+
+    public void verifyOwnership(Long listId, User user) {
+        ShoppingList shoppingList = findListById(listId);
+
+        if (!shoppingList.getOwner().getId().equals(user.getId())) {
+            throw new ResourceOwnershipException("You do not have permission to access this resource");
+        }
     }
 }
