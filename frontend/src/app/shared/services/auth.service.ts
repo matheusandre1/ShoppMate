@@ -82,6 +82,16 @@ export class AuthService {
   private hasToken(): boolean {
     return !!this.getToken();
   }
+}
+
+  getToken(): string | null {
+    return localStorage.getItem(this.AUTH_TOKEN_KEY);
+  }
+
+  private hasToken(): boolean {
+    return !!this.getToken();
+  }
+<<<<<<< HEAD
 
   getCurrentUserId(): number | null {
     const token = this.getToken();
@@ -98,4 +108,6 @@ export class AuthService {
       return null;
     }
   }
+=======
+>>>>>>> 9ac6f9a (refactor(frontend): remove userId from client-side requests)
 }

@@ -20,7 +20,6 @@ import {
   ShoppingListResponseDTO,
   ShoppingListRequestDTO,
 } from '../../../shared/interfaces/shopping-list.interface';
-import { AuthService } from '../../../shared/services/auth.service';
 import { MatDialogActions } from '@angular/material/dialog';
 import { MatDialogContent } from '@angular/material/dialog';
 import { FeedbackService } from '../../../shared/services/feedback.service';
@@ -46,7 +45,6 @@ export class ShoppingListDialogComponent {
   private fb = inject(FormBuilder);
   private shoppingListService = inject(ShoppingListService);
   private feedback = inject(FeedbackService);
-  private authService = inject(AuthService);
   private data = inject(MAT_DIALOG_DATA) as {
     list?: ShoppingListResponseDTO;
     isEdit: boolean;
@@ -62,15 +60,6 @@ export class ShoppingListDialogComponent {
 
   onSubmit(): void {
     if (this.listForm.valid) {
-      const userId = this.authService.getCurrentUserId();
-
-      if (userId == null) {
-        this.feedback.error(
-          'Usuario nao identificado. Por favor, faca login novamente.',
-        );
-        return;
-      }
-
       const name = (this.listForm.value.name ?? '').trim();
       if (!name) {
         const control = this.listForm.get('name');
@@ -80,8 +69,7 @@ export class ShoppingListDialogComponent {
       }
 
       const listData: ShoppingListRequestDTO = {
-        name,
-        idUser: userId,
+        name: this.listForm.value.name,
       };
 
       if (this.isEdit() && this.data.list) {
