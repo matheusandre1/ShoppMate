@@ -33,50 +33,8 @@ import { Unit } from '../../../../shared/interfaces/unit.interface';
     MatButtonModule,
     MatSelectModule,
   ],
-  template: `
-    <h2 mat-dialog-title>{{ data.item ? 'Editar' : 'Novo' }} Item</h2>
-    <mat-dialog-content>
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Nome</mat-label>
-        <input matInput [(ngModel)]="item.name" required />
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Categoria</mat-label>
-        <mat-select [(ngModel)]="item.idCategory" required>
-          <mat-option *ngFor="let category of categories" [value]="category.id">
-            {{ category.name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Unidade</mat-label>
-        <mat-select [(ngModel)]="item.idUnit" required>
-          <mat-option *ngFor="let unit of units" [value]="unit.id">
-            {{ unit.name }} ({{ unit.symbol }})
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Cancelar</button>
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="onSave()"
-        [disabled]="!item.name || !item.idCategory || !item.idUnit"
-      >
-        Salvar
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [
-    `
-      .w-100 {
-        width: 100%;
-        margin-bottom: 1rem;
-      }
-    `,
-  ],
+  templateUrl: './item-dialog.component.html',
+  styleUrls: ['./item-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ItemDialogComponent implements OnInit {
