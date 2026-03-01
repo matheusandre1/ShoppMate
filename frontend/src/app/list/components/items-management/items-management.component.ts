@@ -145,7 +145,7 @@ export class ItemsManagementComponent implements OnInit {
             duration: 3000,
           });
         },
-        error: (error) => {
+        error: () => {
           this.snackBar.open('Erro ao excluir item', 'Fechar', {
             duration: 3000,
           });

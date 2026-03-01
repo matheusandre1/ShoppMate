@@ -95,7 +95,7 @@ export class ListDetailsComponent implements OnInit {
       .updateListItem(this.listId, item.idListItem, updatedItem)
       .subscribe({
         next: () => this.loadData(),
-        error: (error) => {
+        error: () => {
           this.snackBar.open('Erro ao atualizar status do item', 'Fechar', {
             duration: 3000,
           });
@@ -166,7 +166,7 @@ export class ListDetailsComponent implements OnInit {
               duration: 3000,
             });
           },
-          error: (error) => {
+          error: () => {
             this.snackBar.open('Erro ao remover item', 'Fechar', {
               duration: 3000,
             });

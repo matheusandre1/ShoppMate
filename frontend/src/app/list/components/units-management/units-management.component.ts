@@ -60,7 +60,7 @@ export class UnitsManagementComponent implements OnInit {
         tap((response) => {
           this.unitsSubject.next(response || []);
         }),
-        catchError((error) => {
+        catchError(() => {
           this.error = true;
           this.unitsSubject.next([]);
           this.snackBar.open(
@@ -95,7 +95,7 @@ export class UnitsManagementComponent implements OnInit {
               duration: 3000,
             });
           },
-          error: (error) => {
+          error: () => {
             this.snackBar.open('Erro ao atualizar unidade', 'Fechar', {
               duration: 3000,
             });
@@ -114,11 +114,7 @@ export class UnitsManagementComponent implements OnInit {
             duration: 3000,
           });
         },
-        error: (error) => {
-          console.error(
-            'UnitsManagementComponent - Error deleting unit:',
-            error,
-          );
+        error: () => {
           this.snackBar.open('Erro ao excluir unidade', 'Fechar', {
             duration: 3000,
           });
@@ -142,7 +138,7 @@ export class UnitsManagementComponent implements OnInit {
               duration: 3000,
             });
           },
-          error: (error) => {
+          error: () => {
             this.snackBar.open('Erro ao adicionar unidade', 'Fechar', {
               duration: 3000,
             });
