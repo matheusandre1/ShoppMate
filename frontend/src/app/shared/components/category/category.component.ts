@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   Validators,
   ReactiveFormsModule,
@@ -36,7 +37,9 @@ import { CategoryService } from '../../services/category.service';
 export class CategoryComponent implements OnInit {
   categories: Category[] = [];
   isLoading = false;
-  categoryForm: FormGroup;
+  categoryForm: FormGroup<{
+    name: FormControl<string>;
+  }>;
   editingCategoryId: number | null = null;
 
   constructor(
@@ -44,7 +47,7 @@ export class CategoryComponent implements OnInit {
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
   ) {
-    this.categoryForm = this.fb.group({
+    this.categoryForm = this.fb.nonNullable.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
     });
   }
@@ -72,9 +75,8 @@ export class CategoryComponent implements OnInit {
   onSubmit(): void {
     if (this.categoryForm.invalid) return;
 
-    const categoryData: Category = {
-      name: this.categoryForm.value.name,
-    };
+    const { name } = this.categoryForm.getRawValue();
+    const categoryData: Category = { name };
 
     if (this.editingCategoryId !== null) {
       categoryData.id = this.editingCategoryId;

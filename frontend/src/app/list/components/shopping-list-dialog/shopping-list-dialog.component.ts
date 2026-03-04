@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
@@ -47,12 +48,14 @@ export class ShoppingListDialogComponent {
     isEdit: boolean;
   };
 
-  listForm: FormGroup;
+  listForm: FormGroup<{
+    name: FormControl<string>;
+  }>;
   isEdit: boolean;
 
   constructor() {
     this.isEdit = this.data.isEdit;
-    this.listForm = this.fb.group({
+    this.listForm = this.fb.nonNullable.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
     });
 
@@ -65,8 +68,9 @@ export class ShoppingListDialogComponent {
 
   onSubmit(): void {
     if (this.listForm.valid) {
+      const { name } = this.listForm.getRawValue();
       const listData: ShoppingListRequestDTO = {
-        name: this.listForm.value.name,
+        name,
         idUser: this.authService.getCurrentUserId(), // Get from auth service
       };
 

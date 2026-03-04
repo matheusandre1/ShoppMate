@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   Validators,
   ReactiveFormsModule,
@@ -48,7 +49,11 @@ export class ListItemComponent implements OnInit {
   listItems: ListItemResponseDTO[] = [];
   availableItems: ItemResponseDTO[] = [];
   isLoading = false;
-  listItemForm: FormGroup;
+  listItemForm: FormGroup<{
+    itemId: FormControl<number | null>;
+    quantity: FormControl<number>;
+    purchased: FormControl<boolean>;
+  }>;
   editingListItemId: number | null = null;
   listId: number;
 
@@ -60,9 +65,12 @@ export class ListItemComponent implements OnInit {
     private route: ActivatedRoute,
   ) {
     this.listItemForm = this.fb.group({
-      itemId: ['', Validators.required],
-      quantity: [1, [Validators.required, Validators.min(1)]],
-      purchased: [false],
+      itemId: [null as number | null, Validators.required],
+      quantity: this.fb.nonNullable.control(1, [
+        Validators.required,
+        Validators.min(1),
+      ]),
+      purchased: this.fb.nonNullable.control(false),
     });
 
     this.listId = Number(this.route.snapshot.paramMap.get('listId'));
@@ -93,10 +101,13 @@ export class ListItemComponent implements OnInit {
   onSubmit(): void {
     if (this.listItemForm.invalid) return;
 
+    const { itemId, quantity } = this.listItemForm.getRawValue();
+    if (itemId === null) return;
+
     const listItemData: ListItemRequestDTO = {
       listId: this.listId,
-      itemId: this.listItemForm.value.itemId,
-      quantity: this.listItemForm.value.quantity,
+      itemId,
+      quantity,
     };
 
     const operation = this.editingListItemId

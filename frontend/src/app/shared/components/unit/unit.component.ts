@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   Validators,
   ReactiveFormsModule,
@@ -36,7 +37,10 @@ import { UnitService } from '../../services/unit.service';
 export class UnitComponent implements OnInit {
   units: Unit[] = [];
   isLoading = false;
-  unitForm: FormGroup;
+  unitForm: FormGroup<{
+    name: FormControl<string>;
+    symbol: FormControl<string>;
+  }>;
   editingUnitId: number | null = null;
 
   constructor(
@@ -44,7 +48,7 @@ export class UnitComponent implements OnInit {
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
   ) {
-    this.unitForm = this.fb.group({
+    this.unitForm = this.fb.nonNullable.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       symbol: ['', [Validators.required]],
     });
@@ -71,10 +75,8 @@ export class UnitComponent implements OnInit {
   onSubmit(): void {
     if (this.unitForm.invalid) return;
 
-    const unitData: Unit = {
-      name: this.unitForm.value.name,
-      symbol: this.unitForm.value.symbol,
-    };
+    const { name, symbol } = this.unitForm.getRawValue();
+    const unitData: Unit = { name, symbol };
 
     if (this.editingUnitId !== null) {
       unitData.id = this.editingUnitId;

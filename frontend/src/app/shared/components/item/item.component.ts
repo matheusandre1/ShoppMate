@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   Validators,
   ReactiveFormsModule,
@@ -48,7 +49,11 @@ export class ItemComponent implements OnInit {
   categories: Category[] = [];
   units: Unit[] = [];
   isLoading = false;
-  itemForm: FormGroup;
+  itemForm: FormGroup<{
+    name: FormControl<string>;
+    idCategory: FormControl<number | null>;
+    idUnit: FormControl<number | null>;
+  }>;
   editingItemId: number | null = null;
 
   constructor(
@@ -59,9 +64,12 @@ export class ItemComponent implements OnInit {
     private snackBar: MatSnackBar,
   ) {
     this.itemForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      idCategory: ['', Validators.required],
-      idUnit: ['', Validators.required],
+      name: this.fb.nonNullable.control('', [
+        Validators.required,
+        Validators.minLength(2),
+      ]),
+      idCategory: this.fb.control<number | null>(null, Validators.required),
+      idUnit: this.fb.control<number | null>(null, Validators.required),
     });
   }
 
@@ -92,11 +100,10 @@ export class ItemComponent implements OnInit {
   onSubmit(): void {
     if (this.itemForm.invalid) return;
 
-    const itemData: ItemRequestDTO = {
-      name: this.itemForm.value.name,
-      idCategory: this.itemForm.value.idCategory,
-      idUnit: this.itemForm.value.idUnit,
-    };
+    const { name, idCategory, idUnit } = this.itemForm.getRawValue();
+    if (idCategory === null || idUnit === null) return;
+
+    const itemData: ItemRequestDTO = { name, idCategory, idUnit };
 
     const operation = this.editingItemId
       ? this.itemService.updateItem(this.editingItemId, itemData)

@@ -8,6 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
@@ -60,7 +61,10 @@ export class ListShareDialogComponent implements OnInit {
   private userService = inject(UserService);
   private snackBar = inject(MatSnackBar);
 
-  shareForm: FormGroup;
+  shareForm: FormGroup<{
+    email: FormControl<string>;
+    permission: FormControl<Permission>;
+  }>;
   permissions: ListPermissionSummaryDTO[] = [];
   users: User[] = [];
   displayedColumns: string[] = ['user', 'permission', 'actions'];
@@ -71,7 +75,7 @@ export class ListShareDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<ListShareDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { listId: number; listName: string },
   ) {
-    this.shareForm = this.fb.group({
+    this.shareForm = this.fb.nonNullable.group({
       email: ['', [Validators.required, Validators.email]],
       permission: [Permission.READ, Validators.required],
     });
@@ -113,7 +117,7 @@ export class ListShareDialogComponent implements OnInit {
 
   onShare(): void {
     if (this.shareForm.valid) {
-      const email = this.shareForm.value.email;
+      const { email, permission } = this.shareForm.getRawValue();
       const user = this.users.find((u) => u.email === email);
 
       if (!user) {
@@ -126,7 +130,7 @@ export class ListShareDialogComponent implements OnInit {
       const request = {
         idList: this.data.listId,
         idUser: user.id!,
-        permission: this.shareForm.value.permission,
+        permission,
       };
 
       this.listPermissionService.addListPermission(request).subscribe({
