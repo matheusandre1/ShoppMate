@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -27,18 +27,14 @@ import { Category } from '../../../../shared/interfaces/category.interface';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoryDialogComponent {
-  category: Category = {
-    name: '',
-  };
+  public dialogRef = inject(MatDialogRef<CategoryDialogComponent>);
+  public data = inject(MAT_DIALOG_DATA) as { category?: Category };
 
-  constructor(
-    public dialogRef: MatDialogRef<CategoryDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { category?: Category },
-  ) {
-    if (data.category) {
-      this.category = { ...data.category };
-    }
-  }
+  category: Category = this.data.category
+    ? { ...this.data.category }
+    : {
+        name: '',
+      };
 
   onCancel(): void {
     this.dialogRef.close();

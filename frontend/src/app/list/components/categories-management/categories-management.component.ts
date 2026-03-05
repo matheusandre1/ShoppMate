@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,14 +30,12 @@ import { CategoryDialogComponent } from '../category-dialog/category-dialog.comp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoriesManagementComponent implements OnInit {
+  private categoryService = inject(CategoryService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
   categories: Category[] = [];
   isLoading = false;
-
-  constructor(
-    private categoryService: CategoryService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-  ) {}
 
   ngOnInit(): void {
     this.loadCategories();

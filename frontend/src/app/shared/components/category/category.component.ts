@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -34,20 +39,16 @@ import { CategoryService } from '../../services/category.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoryComponent implements OnInit {
+  private categoryService = inject(CategoryService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   categories: Category[] = [];
   isLoading = false;
-  categoryForm: FormGroup;
+  categoryForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+  });
   editingCategoryId: number | null = null;
-
-  constructor(
-    private categoryService: CategoryService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar,
-  ) {
-    this.categoryForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-    });
-  }
 
   ngOnInit(): void {
     this.loadCategories();

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -27,19 +27,15 @@ import { ShoppingListRequestDTO } from '../../../../shared/interfaces/shopping-l
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListDialogComponent {
-  list: ShoppingListRequestDTO = {
-    name: '',
-    idUser: 0,
-  };
+  public dialogRef = inject(MatDialogRef<ListDialogComponent>);
+  public data = inject(MAT_DIALOG_DATA) as { list?: ShoppingListRequestDTO };
 
-  constructor(
-    public dialogRef: MatDialogRef<ListDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { list?: ShoppingListRequestDTO },
-  ) {
-    if (data.list) {
-      this.list = { ...data.list };
-    }
-  }
+  list: ShoppingListRequestDTO = this.data.list
+    ? { ...this.data.list }
+    : {
+        name: '',
+        idUser: 0,
+      };
 
   onCancel(): void {
     this.dialogRef.close();

@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -45,28 +50,22 @@ import { forkJoin } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListItemComponent implements OnInit {
+  private listItemService = inject(ListItemService);
+  private itemService = inject(ItemService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+  private route = inject(ActivatedRoute);
+
   listItems: ListItemResponseDTO[] = [];
   availableItems: ItemResponseDTO[] = [];
   isLoading = false;
-  listItemForm: FormGroup;
+  listItemForm: FormGroup = this.fb.group({
+    itemId: ['', Validators.required],
+    quantity: [1, [Validators.required, Validators.min(1)]],
+    purchased: [false],
+  });
   editingListItemId: number | null = null;
-  listId: number;
-
-  constructor(
-    private listItemService: ListItemService,
-    private itemService: ItemService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar,
-    private route: ActivatedRoute,
-  ) {
-    this.listItemForm = this.fb.group({
-      itemId: ['', Validators.required],
-      quantity: [1, [Validators.required, Validators.min(1)]],
-      purchased: [false],
-    });
-
-    this.listId = Number(this.route.snapshot.paramMap.get('listId'));
-  }
+  listId = Number(this.route.snapshot.paramMap.get('listId'));
 
   ngOnInit(): void {
     this.loadInitialData();

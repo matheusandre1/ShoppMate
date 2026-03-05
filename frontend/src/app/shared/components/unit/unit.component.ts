@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -34,21 +39,17 @@ import { UnitService } from '../../services/unit.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UnitComponent implements OnInit {
+  private unitService = inject(UnitService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   units: Unit[] = [];
   isLoading = false;
-  unitForm: FormGroup;
+  unitForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    symbol: ['', [Validators.required]],
+  });
   editingUnitId: number | null = null;
-
-  constructor(
-    private unitService: UnitService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar,
-  ) {
-    this.unitForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      symbol: ['', [Validators.required]],
-    });
-  }
 
   ngOnInit(): void {
     this.loadUnits();

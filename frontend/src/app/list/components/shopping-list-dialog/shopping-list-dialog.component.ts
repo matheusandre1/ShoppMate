@@ -47,21 +47,13 @@ export class ShoppingListDialogComponent {
     isEdit: boolean;
   };
 
-  listForm: FormGroup;
-  isEdit: boolean;
-
-  constructor() {
-    this.isEdit = this.data.isEdit;
-    this.listForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-    });
-
-    if (this.isEdit && this.data.list) {
-      this.listForm.patchValue({
-        name: this.data.list.listName,
-      });
-    }
-  }
+  listForm: FormGroup = this.fb.group({
+    name: [
+      this.data.list?.listName ?? '',
+      [Validators.required, Validators.minLength(3)],
+    ],
+  });
+  isEdit: boolean = this.data.isEdit;
 
   onSubmit(): void {
     if (this.listForm.valid) {

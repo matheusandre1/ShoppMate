@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -44,26 +49,22 @@ import { forkJoin } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ItemComponent implements OnInit {
+  private itemService = inject(ItemService);
+  private categoryService = inject(CategoryService);
+  private unitService = inject(UnitService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   items: ItemResponseDTO[] = [];
   categories: Category[] = [];
   units: Unit[] = [];
   isLoading = false;
-  itemForm: FormGroup;
+  itemForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    idCategory: ['', Validators.required],
+    idUnit: ['', Validators.required],
+  });
   editingItemId: number | null = null;
-
-  constructor(
-    private itemService: ItemService,
-    private categoryService: CategoryService,
-    private unitService: UnitService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar,
-  ) {
-    this.itemForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      idCategory: ['', Validators.required],
-      idUnit: ['', Validators.required],
-    });
-  }
 
   ngOnInit(): void {
     this.loadInitialData();

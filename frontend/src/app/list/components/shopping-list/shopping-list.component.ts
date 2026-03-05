@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -28,14 +33,12 @@ import { ListShareDialogComponent } from '../list-share-dialog/list-share-dialog
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShoppingListComponent implements OnInit {
+  private shoppingListService = inject(ShoppingListService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
   shoppingLists: ShoppingListResponseDTO[] = [];
   isLoading = false;
-
-  constructor(
-    private shoppingListService: ShoppingListService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-  ) {}
 
   ngOnInit(): void {
     this.loadLists();

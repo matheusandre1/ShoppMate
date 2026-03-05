@@ -13,10 +13,6 @@ import { catchError } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class ListPermissionService extends BaseService {
-  constructor() {
-    super();
-  }
-
   getAllListPermissions(
     shoppingListId: number,
   ): Observable<ListPermissionSummaryDTO[]> {

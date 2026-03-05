@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Inject,
   OnInit,
   inject,
 } from '@angular/core';
@@ -59,23 +58,18 @@ export class ListShareDialogComponent implements OnInit {
   private listPermissionService = inject(ListPermissionService);
   private userService = inject(UserService);
   private snackBar = inject(MatSnackBar);
+  public dialogRef = inject(MatDialogRef<ListShareDialogComponent>);
+  public data = inject(MAT_DIALOG_DATA) as { listId: number; listName: string };
 
-  shareForm: FormGroup;
+  shareForm: FormGroup = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    permission: [Permission.READ, Validators.required],
+  });
   permissions: ListPermissionSummaryDTO[] = [];
   users: User[] = [];
   displayedColumns: string[] = ['user', 'permission', 'actions'];
   permissionTypes = Object.values(Permission);
   isLoading = false;
-
-  constructor(
-    public dialogRef: MatDialogRef<ListShareDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { listId: number; listName: string },
-  ) {
-    this.shareForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      permission: [Permission.READ, Validators.required],
-    });
-  }
 
   ngOnInit(): void {
     this.loadPermissions();
