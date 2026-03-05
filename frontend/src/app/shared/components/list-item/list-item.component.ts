@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -45,11 +50,11 @@ import { forkJoin } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListItemComponent implements OnInit {
-  listItems: ListItemResponseDTO[] = [];
-  availableItems: ItemResponseDTO[] = [];
-  isLoading = false;
+  readonly listItems = signal<ListItemResponseDTO[]>([]);
+  readonly availableItems = signal<ItemResponseDTO[]>([]);
+  readonly isLoading = signal(false);
   listItemForm: FormGroup;
-  editingListItemId: number | null = null;
+  readonly editingListItemId = signal<number | null>(null);
   listId: number;
 
   constructor(
@@ -73,19 +78,19 @@ export class ListItemComponent implements OnInit {
   }
 
   loadInitialData(): void {
-    this.isLoading = true;
+    this.isLoading.set(true);
     forkJoin({
       listItems: this.listItemService.getAllListItems(this.listId),
       items: this.itemService.getAllItems(),
     }).subscribe({
       next: (data) => {
-        this.listItems = data.listItems;
-        this.availableItems = data.items;
-        this.isLoading = false;
+        this.listItems.set(data.listItems);
+        this.availableItems.set(data.items);
+        this.isLoading.set(false);
       },
       error: () => {
         this.snackBar.open('Error loading data', 'Close', { duration: 3000 });
-        this.isLoading = false;
+        this.isLoading.set(false);
       },
     });
   }
@@ -99,10 +104,10 @@ export class ListItemComponent implements OnInit {
       quantity: this.listItemForm.value.quantity,
     };
 
-    const operation = this.editingListItemId
+    const operation = this.editingListItemId()
       ? this.listItemService.updateListItem(
           this.listId,
-          this.editingListItemId,
+          this.editingListItemId()!,
           listItemData,
         )
       : this.listItemService.addListItem(listItemData);
@@ -110,7 +115,7 @@ export class ListItemComponent implements OnInit {
     operation.subscribe({
       next: () => {
         this.snackBar.open(
-          this.editingListItemId
+          this.editingListItemId()
             ? 'Item updated successfully'
             : 'Item added successfully',
           'Close',
@@ -128,7 +133,7 @@ export class ListItemComponent implements OnInit {
   }
 
   startEdit(listItem: ListItemResponseDTO): void {
-    this.editingListItemId = listItem.idListItem;
+    this.editingListItemId.set(listItem.idListItem);
     this.listItemForm.patchValue({
       itemId: listItem.item.id,
       quantity: listItem.quantity,
@@ -180,16 +185,16 @@ export class ListItemComponent implements OnInit {
       quantity: 1,
       purchased: false,
     });
-    this.editingListItemId = null;
+    this.editingListItemId.set(null);
   }
 
   getAvailableItems(): ItemResponseDTO[] {
-    if (!this.editingListItemId) {
-      return this.availableItems.filter(
+    if (!this.editingListItemId()) {
+      return this.availableItems().filter(
         (item) =>
-          !this.listItems.some((listItem) => listItem.item.id === item.id),
+          !this.listItems().some((listItem) => listItem.item.id === item.id),
       );
     }
-    return this.availableItems;
+    return this.availableItems();
   }
 }

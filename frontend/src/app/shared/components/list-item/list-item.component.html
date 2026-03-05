@@ -2,7 +2,7 @@
   <mat-card class="form-card">
     <mat-card-header>
       <mat-card-title>{{
-        editingListItemId ? "Edit Item in List" : "Add Item to List"
+        editingListItemId() ? "Edit Item in List" : "Add Item to List"
       }}</mat-card-title>
     </mat-card-header>
     <mat-card-content>
@@ -49,9 +49,9 @@
             type="submit"
             [disabled]="listItemForm.invalid"
           >
-            {{ editingListItemId ? "Update" : "Add" }}
+            {{ editingListItemId() ? "Update" : "Add" }}
           </button>
-          @if (editingListItemId) {
+          @if (editingListItemId()) {
             <button mat-button type="button" (click)="resetForm()">
               Cancel
             </button>
@@ -61,11 +61,11 @@
     </mat-card-content>
   </mat-card>
 
-  @if (isLoading) {
+  @if (isLoading()) {
     <div class="loading-spinner">
       <mat-spinner></mat-spinner>
     </div>
-  } @else if (listItems.length === 0) {
+  } @else if (listItems().length === 0) {
     <mat-card class="empty-state">
       <mat-card-content>
         <p>No items in this list</p>
@@ -73,7 +73,7 @@
     </mat-card>
   } @else {
     <div class="list-items-grid">
-      @for (listItem of listItems; track listItem.idListItem) {
+      @for (listItem of listItems(); track listItem.idListItem) {
         <mat-card class="list-item-card" [class.purchased]="listItem.purchased">
           <mat-card-header>
             <mat-card-title>{{ listItem.item.name }}</mat-card-title>
