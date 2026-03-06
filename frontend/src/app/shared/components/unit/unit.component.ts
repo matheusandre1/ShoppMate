@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -12,9 +17,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Unit } from '../../interfaces/unit.interface';
 import { UnitService } from '../../services/unit.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { FeedbackService } from '../../services/feedback.service';
 
 @Component({
   standalone: true,
@@ -39,10 +45,12 @@ export class UnitComponent implements OnInit {
   unitForm: FormGroup;
   editingUnitId: number | null = null;
 
+  private confirmDialog = inject(ConfirmDialogService);
+  private feedback = inject(FeedbackService);
+
   constructor(
     private unitService: UnitService,
     private fb: FormBuilder,
-    private snackBar: MatSnackBar,
   ) {
     this.unitForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
@@ -62,7 +70,7 @@ export class UnitComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => {
-        this.snackBar.open('Error loading units', 'Close', { duration: 3000 });
+        this.feedback.error('Erro ao carregar unidades');
         this.isLoading = false;
       },
     });
@@ -87,18 +95,16 @@ export class UnitComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
-        this.snackBar.open(
+        this.feedback.success(
           this.editingUnitId !== null
-            ? 'Unit updated successfully'
-            : 'Unit created successfully',
-          'Close',
-          { duration: 3000 },
+            ? 'Unidade atualizada com sucesso'
+            : 'Unidade criada com sucesso',
         );
         this.resetForm();
         this.loadUnits();
       },
       error: () => {
-        this.snackBar.open('Error saving unit', 'Close', { duration: 3000 });
+        this.feedback.error('Erro ao salvar unidade');
       },
     });
   }
@@ -112,21 +118,25 @@ export class UnitComponent implements OnInit {
   }
 
   deleteUnit(id: number): void {
-    if (confirm('Are you sure you want to delete this unit?')) {
-      this.unitService.deleteUnit(id).subscribe({
-        next: () => {
-          this.snackBar.open('Unit deleted successfully', 'Close', {
-            duration: 3000,
-          });
-          this.loadUnits();
-        },
-        error: () => {
-          this.snackBar.open('Error deleting unit', 'Close', {
-            duration: 3000,
-          });
-        },
+    this.confirmDialog
+      .open({
+        title: 'Excluir unidade',
+        message: 'Tem certeza que deseja excluir esta unidade?',
+        confirmText: 'Excluir',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+
+        this.unitService.deleteUnit(id).subscribe({
+          next: () => {
+            this.feedback.success('Unidade excluida com sucesso');
+            this.loadUnits();
+          },
+          error: () => {
+            this.feedback.error('Erro ao excluir unidade');
+          },
+        });
       });
-    }
   }
 
   resetForm(): void {

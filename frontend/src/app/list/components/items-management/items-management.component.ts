@@ -15,7 +15,6 @@ import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AsyncPipe } from '@angular/common';
 import { finalize, Observable } from 'rxjs';
 import { ItemDialogComponent } from './item-dialog/item-dialog.component';
@@ -26,6 +25,8 @@ import { UnitService } from '../../../shared/services/unit.service';
 import { ItemResponseDTO } from '../../../shared/interfaces/item.interface';
 import { Category } from '../../../shared/interfaces/category.interface';
 import { Unit } from '../../../shared/interfaces/unit.interface';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
+import { FeedbackService } from '../../../shared/services/feedback.service';
 
 @Component({
   selector: 'app-items-management',
@@ -52,7 +53,8 @@ export class ItemsManagementComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private unitService = inject(UnitService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private confirmDialog = inject(ConfirmDialogService);
+  private feedback = inject(FeedbackService);
   private fb = inject(FormBuilder);
 
   loading = true;
@@ -91,14 +93,10 @@ export class ItemsManagementComponent implements OnInit {
         this.itemService.addItem(result).subscribe({
           next: () => {
             this.loadData();
-            this.snackBar.open('Item adicionado com sucesso', 'Fechar', {
-              duration: 3000,
-            });
+            this.feedback.success('Item adicionado com sucesso');
           },
           error: () => {
-            this.snackBar.open('Erro ao adicionar item', 'Fechar', {
-              duration: 3000,
-            });
+            this.feedback.error('Erro ao adicionar item');
           },
         });
       }
@@ -122,14 +120,10 @@ export class ItemsManagementComponent implements OnInit {
         this.itemService.updateItem(item.id, result).subscribe({
           next: () => {
             this.loadData();
-            this.snackBar.open('Item atualizado com sucesso', 'Fechar', {
-              duration: 3000,
-            });
+            this.feedback.success('Item atualizado com sucesso');
           },
           error: () => {
-            this.snackBar.open('Erro ao atualizar item', 'Fechar', {
-              duration: 3000,
-            });
+            this.feedback.error('Erro ao atualizar item');
           },
         });
       }
@@ -137,20 +131,24 @@ export class ItemsManagementComponent implements OnInit {
   }
 
   deleteItem(item: ItemResponseDTO): void {
-    if (confirm(`Tem certeza que deseja excluir o item "${item.name}"?`)) {
-      this.itemService.deleteItem(item.id).subscribe({
-        next: () => {
-          this.loadData();
-          this.snackBar.open('Item excluído com sucesso', 'Fechar', {
-            duration: 3000,
-          });
-        },
-        error: () => {
-          this.snackBar.open('Erro ao excluir item', 'Fechar', {
-            duration: 3000,
-          });
-        },
+    this.confirmDialog
+      .open({
+        title: 'Excluir item',
+        message: `Tem certeza que deseja excluir o item "${item.name}"?`,
+        confirmText: 'Excluir',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+
+        this.itemService.deleteItem(item.id).subscribe({
+          next: () => {
+            this.loadData();
+            this.feedback.success('Item excluido com sucesso');
+          },
+          error: () => {
+            this.feedback.error('Erro ao excluir item');
+          },
+        });
       });
-    }
   }
 }

@@ -15,7 +15,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AsyncPipe } from '@angular/common';
 import { FormBuilder } from '@angular/forms';
@@ -27,6 +26,8 @@ import { ItemService } from '../../../shared/services/item.service';
 import { ShoppingListService } from '../../../shared/services/shopping-list.service';
 import { ListItemResponseDTO } from '../../../shared/interfaces/list-item.interface';
 import { ShoppingListResponseDTO } from '../../../shared/interfaces/shopping-list.interface';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
+import { FeedbackService } from '../../../shared/services/feedback.service';
 
 @Component({
   selector: 'app-list-details',
@@ -55,7 +56,8 @@ export class ListDetailsComponent implements OnInit {
   private shoppingListService = inject(ShoppingListService);
   private itemService = inject(ItemService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private confirmDialog = inject(ConfirmDialogService);
+  private feedback = inject(FeedbackService);
   private fb = inject(FormBuilder);
 
   listId!: number;
@@ -72,12 +74,10 @@ export class ListDetailsComponent implements OnInit {
   loadData(): void {
     this.loading = true;
 
-    // Get the list details
     this.list$ = this.shoppingListService
       .getAllShoppingLists()
       .pipe(map((lists) => lists.find((list) => list.idList === this.listId)!));
 
-    // Get list items
     this.listItems$ = this.listItemService
       .getAllListItemsByListId(this.listId)
       .pipe(finalize(() => (this.loading = false)));
@@ -96,9 +96,7 @@ export class ListDetailsComponent implements OnInit {
       .subscribe({
         next: () => this.loadData(),
         error: () => {
-          this.snackBar.open('Erro ao atualizar status do item', 'Fechar', {
-            duration: 3000,
-          });
+          this.feedback.error('Erro ao atualizar status do item');
         },
       });
   }
@@ -114,14 +112,10 @@ export class ListDetailsComponent implements OnInit {
         this.listItemService.addListItem(this.listId, result).subscribe({
           next: () => {
             this.loadData();
-            this.snackBar.open('Item adicionado com sucesso', 'Fechar', {
-              duration: 3000,
-            });
+            this.feedback.success('Item adicionado com sucesso');
           },
           error: () => {
-            this.snackBar.open('Erro ao adicionar item', 'Fechar', {
-              duration: 3000,
-            });
+            this.feedback.error('Erro ao adicionar item');
           },
         });
       }
@@ -141,14 +135,10 @@ export class ListDetailsComponent implements OnInit {
           .subscribe({
             next: () => {
               this.loadData();
-              this.snackBar.open('Item atualizado com sucesso', 'Fechar', {
-                duration: 3000,
-              });
+              this.feedback.success('Item atualizado com sucesso');
             },
             error: () => {
-              this.snackBar.open('Erro ao atualizar item', 'Fechar', {
-                duration: 3000,
-              });
+              this.feedback.error('Erro ao atualizar item');
             },
           });
       }
@@ -156,22 +146,26 @@ export class ListDetailsComponent implements OnInit {
   }
 
   removeItem(item: ListItemResponseDTO): void {
-    if (confirm(`Tem certeza que deseja remover ${item.item.name} da lista?`)) {
-      this.listItemService
-        .deleteListItem(this.listId, item.idListItem)
-        .subscribe({
-          next: () => {
-            this.loadData();
-            this.snackBar.open('Item removido com sucesso', 'Fechar', {
-              duration: 3000,
-            });
-          },
-          error: () => {
-            this.snackBar.open('Erro ao remover item', 'Fechar', {
-              duration: 3000,
-            });
-          },
-        });
-    }
+    this.confirmDialog
+      .open({
+        title: 'Remover item',
+        message: `Tem certeza que deseja remover ${item.item.name} da lista?`,
+        confirmText: 'Remover',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+
+        this.listItemService
+          .deleteListItem(this.listId, item.idListItem)
+          .subscribe({
+            next: () => {
+              this.loadData();
+              this.feedback.success('Item removido com sucesso');
+            },
+            error: () => {
+              this.feedback.error('Erro ao remover item');
+            },
+          });
+      });
   }
 }

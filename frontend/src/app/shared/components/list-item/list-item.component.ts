@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -12,7 +17,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ActivatedRoute } from '@angular/router';
@@ -24,6 +28,8 @@ import { ItemResponseDTO } from '../../interfaces/item.interface';
 import { ItemService } from '../../services/item.service';
 import { ListItemService } from '../../services/list-item.service';
 import { forkJoin } from 'rxjs';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { FeedbackService } from '../../services/feedback.service';
 
 @Component({
   standalone: true,
@@ -52,11 +58,13 @@ export class ListItemComponent implements OnInit {
   editingListItemId: number | null = null;
   listId: number;
 
+  private confirmDialog = inject(ConfirmDialogService);
+  private feedback = inject(FeedbackService);
+
   constructor(
     private listItemService: ListItemService,
     private itemService: ItemService,
     private fb: FormBuilder,
-    private snackBar: MatSnackBar,
     private route: ActivatedRoute,
   ) {
     this.listItemForm = this.fb.group({
@@ -84,7 +92,7 @@ export class ListItemComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => {
-        this.snackBar.open('Error loading data', 'Close', { duration: 3000 });
+        this.feedback.error('Erro ao carregar dados');
         this.isLoading = false;
       },
     });
@@ -109,20 +117,16 @@ export class ListItemComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
-        this.snackBar.open(
+        this.feedback.success(
           this.editingListItemId
-            ? 'Item updated successfully'
-            : 'Item added successfully',
-          'Close',
-          { duration: 3000 },
+            ? 'Item atualizado com sucesso'
+            : 'Item adicionado com sucesso',
         );
         this.resetForm();
         this.loadInitialData();
       },
       error: () => {
-        this.snackBar.open('Error saving list item', 'Close', {
-          duration: 3000,
-        });
+        this.feedback.error('Erro ao salvar item da lista');
       },
     });
   }
@@ -137,21 +141,25 @@ export class ListItemComponent implements OnInit {
   }
 
   deleteListItem(id: number): void {
-    if (confirm('Are you sure you want to remove this item from the list?')) {
-      this.listItemService.deleteListItem(this.listId, id).subscribe({
-        next: () => {
-          this.snackBar.open('Item removed successfully', 'Close', {
-            duration: 3000,
-          });
-          this.loadInitialData();
-        },
-        error: () => {
-          this.snackBar.open('Error removing item', 'Close', {
-            duration: 3000,
-          });
-        },
+    this.confirmDialog
+      .open({
+        title: 'Remover item',
+        message: 'Tem certeza que deseja remover este item da lista?',
+        confirmText: 'Remover',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+
+        this.listItemService.deleteListItem(this.listId, id).subscribe({
+          next: () => {
+            this.feedback.success('Item removido com sucesso');
+            this.loadInitialData();
+          },
+          error: () => {
+            this.feedback.error('Erro ao remover item');
+          },
+        });
       });
-    }
   }
 
   togglePurchased(listItem: ListItemResponseDTO): void {
@@ -168,9 +176,7 @@ export class ListItemComponent implements OnInit {
           this.loadInitialData();
         },
         error: () => {
-          this.snackBar.open('Error updating item status', 'Close', {
-            duration: 3000,
-          });
+          this.feedback.error('Erro ao atualizar status do item');
         },
       });
   }

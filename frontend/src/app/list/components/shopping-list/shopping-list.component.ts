@@ -1,16 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ShoppingListService } from '../../../shared/services/shopping-list.service';
 import { ShoppingListResponseDTO } from '../../../shared/interfaces/shopping-list.interface';
 import { ShoppingListDialogComponent } from '../shopping-list-dialog/shopping-list-dialog.component';
 import { ListShareDialogComponent } from '../list-share-dialog/list-share-dialog.component';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
+import { FeedbackService } from '../../../shared/services/feedback.service';
 
 @Component({
   selector: 'app-shopping-list',
@@ -34,7 +40,8 @@ export class ShoppingListComponent implements OnInit {
   constructor(
     private shoppingListService: ShoppingListService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar,
+    private confirmDialog: ConfirmDialogService,
+    private feedback: FeedbackService,
   ) {}
 
   ngOnInit(): void {
@@ -49,9 +56,7 @@ export class ShoppingListComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => {
-        this.snackBar.open('Erro ao carregar listas', 'Fechar', {
-          duration: 3000,
-        });
+        this.feedback.error('Erro ao carregar listas');
         this.isLoading = false;
       },
     });
@@ -84,21 +89,25 @@ export class ShoppingListComponent implements OnInit {
   }
 
   deleteList(id: number): void {
-    if (confirm('Tem certeza que deseja excluir esta lista?')) {
-      this.shoppingListService.deleteShoppingList(id).subscribe({
-        next: () => {
-          this.snackBar.open('Lista excluída com sucesso', 'Fechar', {
-            duration: 3000,
-          });
-          this.loadLists();
-        },
-        error: () => {
-          this.snackBar.open('Erro ao excluir lista', 'Fechar', {
-            duration: 3000,
-          });
-        },
+    this.confirmDialog
+      .open({
+        title: 'Excluir lista',
+        message: 'Tem certeza que deseja excluir esta lista?',
+        confirmText: 'Excluir',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+
+        this.shoppingListService.deleteShoppingList(id).subscribe({
+          next: () => {
+            this.feedback.success('Lista excluida com sucesso');
+            this.loadLists();
+          },
+          error: () => {
+            this.feedback.error('Erro ao excluir lista');
+          },
+        });
       });
-    }
   }
 
   openShareDialog(list: ShoppingListResponseDTO): void {
