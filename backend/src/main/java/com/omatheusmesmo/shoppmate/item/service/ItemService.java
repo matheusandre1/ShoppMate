@@ -53,7 +53,7 @@ public class ItemService {
     }
 
     public Item findById(Long id) {
-        return itemRepository.findById(id)
+        return itemRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new NoSuchElementException("Item not found with id: " + id));
     }
 

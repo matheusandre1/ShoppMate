@@ -61,8 +61,9 @@ public class ShoppingListService {
 
     // TODO: implement soft delete?
     public void removeList(Long id, User currentLoggedUser) {
-        ShoppingList shoppingList = findListById(id);
+        ShoppingList shoppingList = findAndVerifyAccess(id, currentLoggedUser);
 
+        // Only the owner can delete the list
         if (!shoppingList.getOwner().getId().equals(currentLoggedUser.getId())) {
             throw new ResourceOwnershipException("You can only delete your own shopping lists!");
         }
@@ -71,11 +72,8 @@ public class ShoppingListService {
     }
 
     public ShoppingList editList(ShoppingList ShoppingList, User currentLoggedUser) {
-        ShoppingList existingList = findListById(ShoppingList.getId());
-
-        if (!existingList.getOwner().getId().equals(currentLoggedUser.getId())) {
-            throw new ResourceOwnershipException("You can only edit your own shopping lists!");
-        }
+        // Verify access (owner or shared permission)
+        findAndVerifyAccess(ShoppingList.getId(), currentLoggedUser);
 
         isListValid(ShoppingList);
         auditService.setAuditData(ShoppingList, false);
@@ -88,14 +86,12 @@ public class ShoppingListService {
     }
 
     public List<ShoppingList> findAllByUser(User user) {
-        return shoppingListRepository.findByOwnerIdAndDeletedFalse(user.getId());
+        return shoppingListRepository.findAllAccessibleByUserId(user.getId());
     }
 
-    public void verifyOwnership(Long listId, User user) {
-        ShoppingList shoppingList = findListById(listId);
-
-        if (!shoppingList.getOwner().getId().equals(user.getId())) {
-            throw new ResourceOwnershipException("You do not have permission to access this resource");
-        }
+    public ShoppingList findAndVerifyAccess(Long listId, User user) {
+        // Unified fetch & verify: Single query to check existence AND permissions
+        return shoppingListRepository.findByIdAndUserId(listId, user.getId()).orElseThrow(
+                () -> new ResourceOwnershipException("Access Denied: You do not have permission to access this list."));
     }
 }

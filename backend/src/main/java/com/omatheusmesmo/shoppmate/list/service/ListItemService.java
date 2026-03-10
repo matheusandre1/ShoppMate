@@ -40,11 +40,7 @@ public class ListItemService {
 
     public ListItem addShoppItemList(ListItemRequestDTO listItemRequestDTO, User user) {
         Item item = itemService.findById(listItemRequestDTO.itemId());
-        ShoppingList shoppingList = shoppingListService.findListById(listItemRequestDTO.listId());
-
-        if (!shoppingList.getOwner().getId().equals(user.getId())) {
-            throw new ResourceOwnershipException("You can only add items to your own shopping lists");
-        }
+        ShoppingList shoppingList = shoppingListService.findAndVerifyAccess(listItemRequestDTO.listId(), user);
 
         ListItem listItem = listItemMapper.toEntity(listItemRequestDTO, item, shoppingList);
 
@@ -71,9 +67,7 @@ public class ListItemService {
         ListItem listItem = ListItemRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NoSuchElementException("ListItem not found"));
 
-        if (!listItem.getShoppList().getOwner().getId().equals(user.getId())) {
-            throw new ResourceOwnershipException("You do not have permission to access this item");
-        }
+        shoppingListService.findAndVerifyAccess(listItem.getShoppList().getId(), user);
 
         return listItem;
     }
@@ -97,7 +91,7 @@ public class ListItemService {
     }
 
     public List<ListItem> findAll(Long idList, User user) {
-        shoppingListService.verifyOwnership(idList, user);
+        shoppingListService.findAndVerifyAccess(idList, user);
         return ListItemRepository.findByShoppListIdAndDeletedFalse(idList);
     }
 }

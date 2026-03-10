@@ -98,7 +98,12 @@ public class ListPermissionService {
     }
 
     public List<ListPermission> findAllPermissionsByListId(Long id, User user) {
-        shoppingListService.verifyOwnership(id, user);
+        ShoppingList list = shoppingListService.findAndVerifyAccess(id, user);
+
+        if (!list.getOwner().getId().equals(user.getId())) {
+            throw new ResourceOwnershipException("Only the list owner can view permissions");
+        }
+
         return listPermissionRepository.findByShoppingListIdAndDeletedFalse(id);
     }
 }

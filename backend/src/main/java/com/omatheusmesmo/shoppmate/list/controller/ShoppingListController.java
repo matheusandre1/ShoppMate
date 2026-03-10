@@ -46,8 +46,7 @@ public class ShoppingListController {
     @GetMapping("/{id}")
     public ResponseEntity<ShoppingListResponseDTO> getShoppingListById(@PathVariable Long id,
             @AuthenticationPrincipal User user) {
-        service.verifyOwnership(id, user);
-        ShoppingList shoppingList = service.findListById(id);
+        ShoppingList shoppingList = service.findAndVerifyAccess(id, user);
         ShoppingListResponseDTO responseDTO = listMapper.toResponseDTO(shoppingList);
         return HttpResponseUtil.ok(responseDTO);
     }
@@ -81,7 +80,7 @@ public class ShoppingListController {
             @Valid @RequestBody ShoppingListUpdateRequestDTO requestDTO,
             @AuthenticationPrincipal User user) {
 
-        ShoppingList existingList = service.findListById(id);
+        ShoppingList existingList = service.findAndVerifyAccess(id, user);
 
         listMapper.updateEntityFromDto(requestDTO, existingList);
 
