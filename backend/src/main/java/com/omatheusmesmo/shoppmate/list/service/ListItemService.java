@@ -40,7 +40,8 @@ public class ListItemService {
 
     public ListItem addShoppItemList(ListItemRequestDTO listItemRequestDTO, User user) {
         Item item = itemService.findById(listItemRequestDTO.itemId());
-        ShoppingList shoppingList = shoppingListService.findAndVerifyAccess(listItemRequestDTO.listId(), user);
+        ShoppingList shoppingList = shoppingListService.findListById(listItemRequestDTO.listId());
+        shoppingListService.verifyOwnership(listItemRequestDTO.listId(), user);
 
         ListItem listItem = listItemMapper.toEntity(listItemRequestDTO, item, shoppingList);
 
@@ -50,15 +51,15 @@ public class ListItemService {
         return listItem;
     }
 
-    public void isListItemValid(ListItem ListItem) throws NoSuchElementException {
-        itemService.isItemValid(ListItem.getItem());
-        shoppingListService.isListValid(ListItem.getShoppList());
+    public void isListItemValid(ListItem listItem) throws NoSuchElementException {
+        itemService.isItemValid(listItem.getItem());
+        shoppingListService.isListValid(listItem.getShoppList());
 
-        checkQuantity(ListItem);
+        checkQuantity(listItem);
     }
 
-    private void checkQuantity(ListItem ListItem) {
-        if (ListItem.getQuantity() == null || ListItem.getQuantity() <= 0) {
+    private void checkQuantity(ListItem listItem) {
+        if (listItem.getQuantity() == null || listItem.getQuantity() <= 0) {
             throw new IllegalArgumentException("Quantity must be informed and greater than 0!");
         }
     }
@@ -67,7 +68,7 @@ public class ListItemService {
         ListItem listItem = ListItemRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NoSuchElementException("ListItem not found"));
 
-        shoppingListService.findAndVerifyAccess(listItem.getShoppList().getId(), user);
+        shoppingListService.verifyOwnership(listItem.getShoppList().getId(), user);
 
         return listItem;
     }
@@ -91,7 +92,7 @@ public class ListItemService {
     }
 
     public List<ListItem> findAll(Long idList, User user) {
-        shoppingListService.findAndVerifyAccess(idList, user);
+        shoppingListService.verifyOwnership(idList, user);
         return ListItemRepository.findByShoppListIdAndDeletedFalse(idList);
     }
 }

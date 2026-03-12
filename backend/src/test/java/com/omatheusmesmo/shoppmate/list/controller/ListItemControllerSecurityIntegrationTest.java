@@ -7,6 +7,7 @@ import com.omatheusmesmo.shoppmate.category.repository.CategoryRepository;
 import com.omatheusmesmo.shoppmate.item.entity.Item;
 import com.omatheusmesmo.shoppmate.item.repository.ItemRepository;
 import com.omatheusmesmo.shoppmate.list.dtos.ListItemRequestDTO;
+import com.omatheusmesmo.shoppmate.list.dtos.ListItemUpdateRequestDTO;
 import com.omatheusmesmo.shoppmate.list.mapper.ListMapper;
 import com.omatheusmesmo.shoppmate.unit.entity.Unit;
 import com.omatheusmesmo.shoppmate.unit.repository.UnitRepository;
@@ -145,10 +146,10 @@ class ListItemControllerSecurityIntegrationTest {
         item.setUnit(unit);
         item = itemRepository.save(item);
 
-        ListItemRequestDTO itemDTOA = new ListItemRequestDTO(userAList.getId(), item.getId(), 2);
+        ListItemRequestDTO itemDTOA = new ListItemRequestDTO(userAList.getId(), item.getId(), 2, null);
         userAListItem = listItemService.addShoppItemList(itemDTOA, userA);
 
-        ListItemRequestDTO itemDTOB = new ListItemRequestDTO(userBList.getId(), item.getId(), 1);
+        ListItemRequestDTO itemDTOB = new ListItemRequestDTO(userBList.getId(), item.getId(), 1, null);
         userBListItem = listItemService.addShoppItemList(itemDTOB, userB);
     }
 
@@ -165,46 +166,36 @@ class ListItemControllerSecurityIntegrationTest {
 
     @Test
     void testUserCannotGetAnotherUsersListItem() throws Exception {
-        mockMvc.perform(get("/lists/" + userBList.getId() + "/items/" + userBListItem.getId())
-                        .header("Authorization", "Bearer " + tokenUserA))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/lists/" + userBList.getId() + "/items/" + userBListItem.getId()).header("Authorization",
+                "Bearer " + tokenUserA)).andExpect(status().isForbidden());
     }
 
     @Test
     void testUserCanGetOwnListItem() throws Exception {
-        mockMvc.perform(get("/lists/" + userAList.getId() + "/items/" + userAListItem.getId())
-                        .header("Authorization", "Bearer " + tokenUserA))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.quantity").value(2));
+        mockMvc.perform(get("/lists/" + userAList.getId() + "/items/" + userAListItem.getId()).header("Authorization",
+                "Bearer " + tokenUserA)).andExpect(status().isOk()).andExpect(jsonPath("$.quantity").value(2));
     }
 
     @Test
     void testUserCannotGetAllItemsFromAnotherUsersList() throws Exception {
-        mockMvc.perform(get("/lists/" + userBList.getId() + "/items")
-                        .header("Authorization", "Bearer " + tokenUserA))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").exists());
+        mockMvc.perform(get("/lists/" + userBList.getId() + "/items").header("Authorization", "Bearer " + tokenUserA))
+                .andExpect(status().isForbidden()).andExpect(jsonPath("$.message").exists());
     }
 
     @Test
     void testUserCanGetAllItemsFromOwnList() throws Exception {
-        mockMvc.perform(get("/lists/" + userAList.getId() + "/items")
-                        .header("Authorization", "Bearer " + tokenUserA))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
+        mockMvc.perform(get("/lists/" + userAList.getId() + "/items").header("Authorization", "Bearer " + tokenUserA))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$[0].quantity").value(2));
     }
 
     @Test
     void testUserCannotAddItemToAnotherUsersList() throws Exception {
-        ListItemRequestDTO maliciousDTO = new ListItemRequestDTO(userBList.getId(), item.getId(), 5);
+        ListItemRequestDTO maliciousDTO = new ListItemRequestDTO(userBList.getId(), item.getId(), 5, null);
 
-        mockMvc.perform(post("/lists/" + userBList.getId() + "/items")
-                        .with(csrf())
-                        .header("Authorization", "Bearer " + tokenUserA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(maliciousDTO)))
-                .andExpect(status().isForbidden())
+        mockMvc.perform(post("/lists/" + userBList.getId() + "/items").with(csrf())
+                .header("Authorization", "Bearer " + tokenUserA).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(maliciousDTO))).andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").exists());
 
         Iterable<ListItem> userBItems = listItemRepository.findAll();
@@ -234,14 +225,11 @@ class ListItemControllerSecurityIntegrationTest {
         newItem.setUnit(unit);
         newItem = itemRepository.save(newItem);
 
-        ListItemRequestDTO validDTO = new ListItemRequestDTO(userAList.getId(), newItem.getId(), 3);
+        ListItemRequestDTO validDTO = new ListItemRequestDTO(userAList.getId(), newItem.getId(), 3, null);
 
-        mockMvc.perform(post("/lists/" + userAList.getId() + "/items")
-                        .with(csrf())
-                        .header("Authorization", "Bearer " + tokenUserA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validDTO)))
-                .andExpect(status().isCreated());
+        mockMvc.perform(post("/lists/" + userAList.getId() + "/items").with(csrf())
+                .header("Authorization", "Bearer " + tokenUserA).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validDTO))).andExpect(status().isCreated());
 
         Iterable<ListItem> allItems = listItemRepository.findAll();
         long userAItemCount = 0;
@@ -255,10 +243,8 @@ class ListItemControllerSecurityIntegrationTest {
 
     @Test
     void testUserCannotDeleteAnotherUsersListItem() throws Exception {
-        mockMvc.perform(delete("/lists/" + userBList.getId() + "/items/" + userBListItem.getId())
-                        .with(csrf())
-                        .header("Authorization", "Bearer " + tokenUserA))
-                .andExpect(status().isForbidden())
+        mockMvc.perform(delete("/lists/" + userBList.getId() + "/items/" + userBListItem.getId()).with(csrf())
+                .header("Authorization", "Bearer " + tokenUserA)).andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").exists());
 
         assertTrue(listItemRepository.findById(userBListItem.getId()).isPresent(),
@@ -267,10 +253,8 @@ class ListItemControllerSecurityIntegrationTest {
 
     @Test
     void testUserCanDeleteOwnListItem() throws Exception {
-        mockMvc.perform(delete("/lists/" + userAList.getId() + "/items/" + userAListItem.getId())
-                        .with(csrf())
-                        .header("Authorization", "Bearer " + tokenUserA))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/lists/" + userAList.getId() + "/items/" + userAListItem.getId()).with(csrf())
+                .header("Authorization", "Bearer " + tokenUserA)).andExpect(status().isNoContent());
 
         assertTrue(listItemRepository.findById(userAListItem.getId()).isPresent(),
                 "Item should still exist in database (soft delete)");
@@ -280,55 +264,47 @@ class ListItemControllerSecurityIntegrationTest {
 
     @Test
     void testUserCannotEditAnotherUsersListItem() throws Exception {
-        ListItemRequestDTO maliciousUpdate = new ListItemRequestDTO(userBList.getId(), item.getId(), 99);
+        ListItemUpdateRequestDTO maliciousUpdate = new ListItemUpdateRequestDTO(userBList.getId(), item.getId(), 99,
+                false, null);
 
-        mockMvc.perform(put("/lists/" + userBList.getId() + "/items/" + userBListItem.getId())
-                        .with(csrf())
-                        .header("Authorization", "Bearer " + tokenUserA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(maliciousUpdate)))
-                .andExpect(status().isForbidden())
+        mockMvc.perform(put("/lists/" + userBList.getId() + "/items/" + userBListItem.getId()).with(csrf())
+                .header("Authorization", "Bearer " + tokenUserA).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(maliciousUpdate))).andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").exists());
 
         ListItem unchangedItem = listItemRepository.findById(userBListItem.getId()).orElseThrow();
-        assertEquals(1, unchangedItem.getQuantity(),
-                "User B's item quantity should remain unchanged");
+        assertEquals(1, unchangedItem.getQuantity(), "User B's item quantity should remain unchanged");
     }
 
     @Test
     void testUserCanEditOwnListItem() throws Exception {
-        ListItemRequestDTO validUpdate = new ListItemRequestDTO(userAList.getId(), item.getId(), 10);
+        ListItemUpdateRequestDTO validUpdate = new ListItemUpdateRequestDTO(userAList.getId(), item.getId(), 10, true,
+                null);
 
-        mockMvc.perform(put("/lists/" + userAList.getId() + "/items/" + userAListItem.getId())
-                        .with(csrf())
-                        .header("Authorization", "Bearer " + tokenUserA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUpdate)))
-                .andExpect(status().isOk())
+        mockMvc.perform(put("/lists/" + userAList.getId() + "/items/" + userAListItem.getId()).with(csrf())
+                .header("Authorization", "Bearer " + tokenUserA).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validUpdate))).andExpect(status().isOk())
                 .andExpect(jsonPath("$.quantity").value(10));
 
         ListItem updatedItem = listItemRepository.findById(userAListItem.getId()).orElseThrow();
-        assertEquals(10, updatedItem.getQuantity(),
-                "User A's item quantity should be updated");
+        assertEquals(10, updatedItem.getQuantity(), "User A's item quantity should be updated");
     }
 
     @Test
     void testUserCannotAccessItemsFromNonExistentList() throws Exception {
-        mockMvc.perform(get("/lists/99999/items")
-                        .header("Authorization", "Bearer " + tokenUserA))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void testUnauthorizedRequestIsRejected() throws Exception {
-        mockMvc.perform(get("/lists/" + userAList.getId() + "/items"))
+        mockMvc.perform(get("/lists/99999/items").header("Authorization", "Bearer " + tokenUserA))
                 .andExpect(status().isForbidden());
     }
 
     @Test
+    void testUnauthorizedRequestIsRejected() throws Exception {
+        mockMvc.perform(get("/lists/" + userAList.getId() + "/items")).andExpect(status().isForbidden());
+    }
+
+    @Test
     void testInvalidTokenIsRejected() throws Exception {
-        mockMvc.perform(get("/lists/" + userAList.getId() + "/items")
-                        .header("Authorization", "Bearer invalid.token.here"))
+        mockMvc.perform(
+                get("/lists/" + userAList.getId() + "/items").header("Authorization", "Bearer invalid.token.here"))
                 .andExpect(status().isForbidden());
     }
 }
