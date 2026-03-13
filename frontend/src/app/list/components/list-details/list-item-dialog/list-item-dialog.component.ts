@@ -1,9 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Inject,
   OnInit,
   signal,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -37,21 +37,16 @@ import { ItemService } from '../../../../shared/services/item.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListItemDialogComponent implements OnInit {
+  public dialogRef = inject(MatDialogRef<ListItemDialogComponent>);
+  public data = inject(MAT_DIALOG_DATA) as {
+    listItem?: ListItemResponseDTO;
+    listId: number;
+  };
+  private itemService = inject(ItemService);
+
   readonly items = signal<ItemResponseDTO[]>([]);
   readonly selectedItemId = signal<number | null>(null);
   readonly quantity = signal(1);
-
-  constructor(
-    public dialogRef: MatDialogRef<ListItemDialogComponent>,
-    @Inject(MAT_DIALOG_DATA)
-    public data: { listItem?: ListItemResponseDTO; listId: number },
-    private itemService: ItemService,
-  ) {
-    if (data.listItem) {
-      this.selectedItemId.set(data.listItem.item.id);
-      this.quantity.set(data.listItem.quantity);
-    }
-  }
 
   ngOnInit(): void {
     this.loadItems();
