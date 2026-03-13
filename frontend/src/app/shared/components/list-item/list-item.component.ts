@@ -52,31 +52,25 @@ import { FeedbackService } from '../../services/feedback.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListItemComponent implements OnInit {
+  private listItemService = inject(ListItemService);
+  private itemService = inject(ItemService);
+  private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private confirmDialog = inject(ConfirmDialogService);
+
+  public feedback = inject(FeedbackService);
+
   readonly listItems = signal<ListItemResponseDTO[]>([]);
   readonly availableItems = signal<ItemResponseDTO[]>([]);
   readonly isLoading = signal(false);
-  listItemForm: FormGroup;
+  readonly listItemForm: FormGroup = this.fb.group({
+    itemId: ['', Validators.required],
+    quantity: [1, [Validators.required, Validators.min(1)]],
+    unitPrice: [0, [Validators.required, Validators.min(0)]],
+    purchased: [false],
+  });
   readonly editingListItemId = signal<number | null>(null);
-  listId: number;
-
-  private confirmDialog = inject(ConfirmDialogService);
-  private feedback = inject(FeedbackService);
-
-  constructor(
-    private listItemService: ListItemService,
-    private itemService: ItemService,
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-  ) {
-    this.listItemForm = this.fb.group({
-      itemId: ['', Validators.required],
-      quantity: [1, [Validators.required, Validators.min(1)]],
-      unitPrice: [0, [Validators.required, Validators.min(0)]],
-      purchased: [false],
-    });
-
-    this.listId = Number(this.route.snapshot.paramMap.get('listId'));
-  }
+  readonly listId = Number(this.route.snapshot.paramMap.get('listId') ?? 0);
 
   ngOnInit(): void {
     this.loadInitialData();

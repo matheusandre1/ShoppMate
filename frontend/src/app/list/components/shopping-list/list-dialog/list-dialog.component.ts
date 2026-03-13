@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -32,30 +27,27 @@ import { ShoppingListRequestDTO } from '../../../../shared/interfaces/shopping-l
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListDialogComponent {
-  readonly listName = signal('');
-  readonly listUserId = signal(0);
+  public dialogRef = inject(MatDialogRef<ListDialogComponent>);
+  public data = inject(MAT_DIALOG_DATA) as { list?: ShoppingListRequestDTO };
 
-  constructor(
-    public dialogRef: MatDialogRef<ListDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { list?: ShoppingListRequestDTO },
-  ) {
-    if (data.list) {
-      this.listName.set(data.list.name);
-      this.listUserId.set(data.list.idUser);
-    }
-  }
+  list: ShoppingListRequestDTO = this.data.list
+    ? { ...this.data.list }
+    : {
+        name: '',
+        idUser: 0,
+      };
 
   onCancel(): void {
     this.dialogRef.close();
   }
 
   onSave(): void {
-    const trimmedName = this.listName().trim();
+    const trimmedName = this.list.name.trim();
     if (!trimmedName) return;
 
     this.dialogRef.close({
       name: trimmedName,
-      idUser: this.listUserId(),
+      idUser: this.list.idUser,
     } satisfies ShoppingListRequestDTO);
   }
 }

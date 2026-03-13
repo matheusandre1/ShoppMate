@@ -2,8 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
-  signal,
   inject,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -22,7 +22,6 @@ import { Unit } from '../../interfaces/unit.interface';
 import { UnitService } from '../../services/unit.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { FeedbackService } from '../../services/feedback.service';
-
 @Component({
   standalone: true,
   selector: 'app-unit',
@@ -41,23 +40,20 @@ import { FeedbackService } from '../../services/feedback.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UnitComponent implements OnInit {
+  private unitService = inject(UnitService);
+  private fb = inject(FormBuilder);
+
   readonly units = signal<Unit[]>([]);
   readonly isLoading = signal(false);
-  unitForm: FormGroup;
   readonly editingUnitId = signal<number | null>(null);
 
   private confirmDialog = inject(ConfirmDialogService);
   private feedback = inject(FeedbackService);
 
-  constructor(
-    private unitService: UnitService,
-    private fb: FormBuilder,
-  ) {
-    this.unitForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      symbol: ['', [Validators.required]],
-    });
-  }
+  readonly unitForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    symbol: ['', [Validators.required]],
+  });
 
   ngOnInit(): void {
     this.loadUnits();
@@ -80,24 +76,29 @@ export class UnitComponent implements OnInit {
   onSubmit(): void {
     if (this.unitForm.invalid) return;
 
+    const editingId = this.editingUnitId();
+    const name = (this.unitForm.value.name ?? '').trim();
+    const symbol = (this.unitForm.value.symbol ?? '').trim();
+    if (!name || !symbol) return;
+
     const unitData: Unit = {
-      name: this.unitForm.value.name,
-      symbol: this.unitForm.value.symbol,
+      name,
+      symbol,
     };
 
-    if (this.editingUnitId() !== null) {
-      unitData.id = this.editingUnitId()!;
+    if (editingId !== null) {
+      unitData.id = editingId;
     }
 
     const operation =
-      this.editingUnitId() !== null
+      editingId !== null
         ? this.unitService.updateUnit(unitData)
         : this.unitService.addUnit(unitData);
 
     operation.subscribe({
       next: () => {
         this.feedback.success(
-          this.editingUnitId() !== null
+          editingId !== null
             ? 'Unidade atualizada com sucesso'
             : 'Unidade criada com sucesso',
         );

@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
   signal,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -31,15 +32,13 @@ import { FeedbackService } from '../../../shared/services/feedback.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoriesManagementComponent implements OnInit {
+  private categoryService = inject(CategoryService);
+  private dialog = inject(MatDialog);
+  private confirmDialog = inject(ConfirmDialogService);
+  private feedback = inject(FeedbackService);
+
   readonly categories = signal<Category[]>([]);
   readonly isLoading = signal(false);
-
-  constructor(
-    private categoryService: CategoryService,
-    private dialog: MatDialog,
-    private confirmDialog: ConfirmDialogService,
-    private feedback: FeedbackService,
-  ) {}
 
   ngOnInit(): void {
     this.loadCategories();

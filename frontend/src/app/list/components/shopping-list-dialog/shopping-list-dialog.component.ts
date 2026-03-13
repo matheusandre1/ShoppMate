@@ -52,21 +52,13 @@ export class ShoppingListDialogComponent {
     isEdit: boolean;
   };
 
-  listForm: FormGroup;
-  readonly isEdit = signal(false);
-
-  constructor() {
-    this.isEdit.set(this.data.isEdit);
-    this.listForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-    });
-
-    if (this.isEdit() && this.data.list) {
-      this.listForm.patchValue({
-        name: this.data.list.listName,
-      });
-    }
-  }
+  readonly isEdit = signal(this.data.isEdit);
+  readonly listForm: FormGroup = this.fb.group({
+    name: [
+      this.data.list?.listName ?? '',
+      [Validators.required, Validators.minLength(3)],
+    ],
+  });
 
   onSubmit(): void {
     if (this.listForm.valid) {
@@ -79,8 +71,16 @@ export class ShoppingListDialogComponent {
         return;
       }
 
+      const name = (this.listForm.value.name ?? '').trim();
+      if (!name) {
+        const control = this.listForm.get('name');
+        control?.setErrors({ ...(control.errors ?? {}), required: true });
+        control?.markAsTouched();
+        return;
+      }
+
       const listData: ShoppingListRequestDTO = {
-        name: this.listForm.value.name,
+        name,
         idUser: userId,
       };
 

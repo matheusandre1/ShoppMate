@@ -58,8 +58,7 @@ export class AuthService {
         }),
       })
       .pipe(
-        catchError((err: HttpErrorResponse) => {
-          console.error('Register error:', err);
+        catchError(() => {
           return throwError(
             () =>
               new Error(
