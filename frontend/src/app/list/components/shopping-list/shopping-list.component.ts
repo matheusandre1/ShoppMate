@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
   signal,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -34,15 +35,13 @@ import { FeedbackService } from '../../../shared/services/feedback.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShoppingListComponent implements OnInit {
+  private shoppingListService = inject(ShoppingListService);
+  private dialog = inject(MatDialog);
+  private confirmDialog = inject(ConfirmDialogService);
+  private feedback = inject(FeedbackService);
+
   readonly shoppingLists = signal<ShoppingListResponseDTO[]>([]);
   readonly isLoading = signal(false);
-
-  constructor(
-    private shoppingListService: ShoppingListService,
-    private dialog: MatDialog,
-    private confirmDialog: ConfirmDialogService,
-    private feedback: FeedbackService,
-  ) {}
 
   ngOnInit(): void {
     this.loadLists();

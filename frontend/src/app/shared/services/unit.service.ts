@@ -11,10 +11,6 @@ import { BaseService } from './base.service';
 export class UnitService extends BaseService {
   private apiUrl = `${environment.apiUrl}/unit`;
 
-  constructor() {
-    super();
-  }
-
   getAllUnits(): Observable<Unit[]> {
     return this.http
       .get<Unit[]>(this.apiUrl)

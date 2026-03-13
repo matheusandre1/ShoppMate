@@ -41,9 +41,14 @@ import { FeedbackService } from '../../services/feedback.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoryComponent implements OnInit {
+  private categoryService = inject(CategoryService);
+  private fb = inject(FormBuilder);
+
   readonly categories = signal<Category[]>([]);
   readonly isLoading = signal(false);
-  categoryForm: FormGroup;
+  categoryForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+  });
   readonly editingCategoryId = signal<number | null>(null);
 
   private confirmDialog = inject(ConfirmDialogService);

@@ -11,10 +11,6 @@ import { BaseService } from './base.service';
 export class CategoryService extends BaseService {
   private apiUrl = `${environment.apiUrl}/category`;
 
-  constructor() {
-    super();
-  }
-
   getAllCategories(): Observable<Category[]> {
     return this.http
       .get<Category[]>(this.apiUrl)
