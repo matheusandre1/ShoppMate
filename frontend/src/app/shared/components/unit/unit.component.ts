@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   OnInit,
   inject,
   signal,
@@ -124,7 +125,7 @@ export class UnitComponent implements OnInit {
         message: 'Tem certeza que deseja excluir esta unidade?',
         confirmText: 'Excluir',
       })
-      .subscribe((confirmed) => {
+      .subscribe((confirmed: boolean) => {
         if (!confirmed) return;
 
         this.unitService.deleteUnit(id).subscribe({
