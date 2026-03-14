@@ -96,7 +96,7 @@ class ShoppingListServiceTest {
         when(shoppingListRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException.class,
-                     () -> shoppingListService.removeList(999L, testUser));
+                () -> shoppingListService.removeList(999L, testUser));
 
         verify(shoppingListRepository, never()).deleteById(999L);
     }

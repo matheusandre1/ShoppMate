@@ -21,5 +21,6 @@ public class ListPermission extends BaseAuditableEntity {
     private User user;
 
     @Column(name = "permission_type")
+    @Enumerated(EnumType.STRING)
     private Permission permission;
 }
