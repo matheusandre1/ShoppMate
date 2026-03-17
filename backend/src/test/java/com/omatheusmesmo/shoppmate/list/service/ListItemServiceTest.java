@@ -105,21 +105,6 @@ class ListItemServiceTest {
     }
 
     @Test
-    void findListItem() {
-        when(shoppingListService.findAndVerifyAccess(shoppingList.getId(), user)).thenReturn(shoppingList);
-        when(listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(listItem.getId(),
-                shoppingList.getId())).thenReturn(Optional.of(listItem));
-
-        ListItem result = service.findListItemById(shoppingList.getId(), listItem.getId(), user);
-
-        assertNotNull(result);
-
-        verify(shoppingListService, times(1)).findAndVerifyAccess(shoppingList.getId(), user);
-        verify(listItemRepository, times(1)).findByIdAndShoppListIdAndDeletedFalseFetchShoppList(listItem.getId(),
-                shoppingList.getId());
-    }
-
-    @Test
     void findListItemById() {
         when(shoppingListService.findAndVerifyAccess(shoppingList.getId(), user)).thenReturn(shoppingList);
         when(listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(listItem.getId(),
@@ -201,6 +186,7 @@ class ListItemServiceTest {
 
     @Test
     void findAll() {
+        when(shoppingListService.findAndVerifyAccess(1L, user)).thenReturn(shoppingList);
         when(listItemRepository.findByShoppListIdAndDeletedFalse(1L)).thenReturn(List.of(listItem));
         doNothing().when(shoppingListService).verifyOwnership(anyLong(), any(User.class));
 
@@ -209,6 +195,7 @@ class ListItemServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
 
+        verify(shoppingListService, times(1)).findAndVerifyAccess(1L, user);
         verify(listItemRepository, times(1)).findByShoppListIdAndDeletedFalse(1L);
         verify(shoppingListService, times(1)).verifyOwnership(1L, user);
     }

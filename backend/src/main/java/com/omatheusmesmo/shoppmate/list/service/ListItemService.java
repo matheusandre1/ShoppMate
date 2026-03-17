@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 @Service
 public class ListItemService {
 
-    private final ListItemRepository ListItemRepository;
+    private final ListItemRepository listItemRepository;
 
     private final ShoppingListService shoppingListService;
 
@@ -31,7 +31,7 @@ public class ListItemService {
 
     public ListItemService(ListItemRepository listItemRepository, ShoppingListService shoppingListService,
             ItemService itemService, AuditService auditService, ListItemMapper listItemMapper) {
-        ListItemRepository = listItemRepository;
+        this.listItemRepository = listItemRepository;
         this.shoppingListService = shoppingListService;
         this.itemService = itemService;
         this.auditService = auditService;
@@ -47,7 +47,7 @@ public class ListItemService {
 
         isListItemValid(listItem);
         auditService.setAuditData(listItem, true);
-        ListItemRepository.save(listItem);
+        listItemRepository.save(listItem);
         return listItem;
     }
 
@@ -69,14 +69,14 @@ public class ListItemService {
         shoppingListService.verifyOwnership(listId, user);
 
         // Query constrained by shoppListId - fails if item doesn't belong to the authorized list
-        return ListItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(id, listId)
+        return listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(id, listId)
                 .orElseThrow(() -> new NoSuchElementException("ListItem not found"));
     }
 
     public void removeList(Long listId, Long id, User user) {
         ListItem deletedItem = findListItemById(listId, id, user);
         auditService.softDelete(deletedItem);
-        ListItemRepository.save(deletedItem);
+        listItemRepository.save(deletedItem);
     }
 
     public ListItem editList(Long listId, Long id, ListItemUpdateRequestDTO listItemUpdateRequestDTO, User user) {
@@ -87,12 +87,12 @@ public class ListItemService {
         existingListItem.setUnitPrice(listItemUpdateRequestDTO.unitPrice());
 
         auditService.setAuditData(existingListItem, false);
-        ListItemRepository.save(existingListItem);
+        listItemRepository.save(existingListItem);
         return existingListItem;
     }
 
     public List<ListItem> findAll(Long idList, User user) {
         shoppingListService.verifyOwnership(idList, user);
-        return ListItemRepository.findByShoppListIdAndDeletedFalse(idList);
+        return listItemRepository.findByShoppListIdAndDeletedFalse(idList);
     }
 }
