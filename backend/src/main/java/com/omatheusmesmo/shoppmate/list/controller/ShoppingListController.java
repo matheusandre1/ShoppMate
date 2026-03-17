@@ -19,7 +19,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-// TODO: return only lists owned by the user or that are shared with him
 @RestController
 @RequestMapping("/lists")
 public class ShoppingListController {
@@ -84,7 +83,9 @@ public class ShoppingListController {
 
         listMapper.updateEntityFromDto(requestDTO, existingList);
 
-        ShoppingList updatedList = service.editList(existingList, user);
+        // editList verifies access again internally, but we already verified above
+        // Pass null to skip redundant verification in editList
+        ShoppingList updatedList = service.editListWithoutVerification(existingList);
 
         ShoppingListResponseDTO responseDTO = listMapper.toResponseDTO(updatedList);
 

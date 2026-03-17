@@ -34,10 +34,10 @@ public class ListItemController {
 
     @Operation(summary = "Get a specific ListItem by its ID within a ShoppingList")
     @GetMapping("/{id}")
-    public ResponseEntity<ListItemResponseDTO> getListItemById(@PathVariable Long id,
+    public ResponseEntity<ListItemResponseDTO> getListItemById(@PathVariable Long listId, @PathVariable Long id,
             @AuthenticationPrincipal User user) {
 
-        ListItem listItem = service.findListItemById(id, user);
+        ListItem listItem = service.findListItemById(listId, id, user);
 
         ListItemResponseDTO responseDTO = listItemMapper.toResponseDTO(listItem);
         return HttpResponseUtil.ok(responseDTO);
@@ -56,8 +56,14 @@ public class ListItemController {
 
     @Operation(summary = "Add a new ListItem")
     @PostMapping
-    public ResponseEntity<ListItemResponseDTO> addListItem(@Valid @RequestBody ListItemRequestDTO requestDTO,
-            @AuthenticationPrincipal User user) {
+    public ResponseEntity<ListItemResponseDTO> addListItem(@PathVariable Long listId,
+            @Valid @RequestBody ListItemRequestDTO requestDTO, @AuthenticationPrincipal User user) {
+
+        if (!listId.equals(requestDTO.listId())) {
+            throw new IllegalArgumentException(
+                    "Path listId (" + listId + ") does not match body listId (" + requestDTO.listId() + ")");
+        }
+
         ListItem addedListItem = service.addShoppItemList(requestDTO, user);
         ListItemResponseDTO responseDTO = listItemMapper.toResponseDTO(addedListItem);
 
@@ -69,19 +75,24 @@ public class ListItemController {
 
     @Operation(summary = "Delete a ListItem by id")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteListItem(@PathVariable Long id, @AuthenticationPrincipal User user) {
+    public ResponseEntity<Void> deleteListItem(@PathVariable Long listId, @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
 
-        service.removeList(id, user);
+        service.removeList(listId, id, user);
         return HttpResponseUtil.noContent();
     }
 
     @Operation(summary = "Update a ListItem")
     @PutMapping("/{id}")
-    public ResponseEntity<ListItemResponseDTO> updateListItem(@PathVariable Long id,
-            @Valid @RequestBody ListItemUpdateRequestDTO requestDTO,
-            @AuthenticationPrincipal User user) {
+    public ResponseEntity<ListItemResponseDTO> updateListItem(@PathVariable Long listId, @PathVariable Long id,
+            @Valid @RequestBody ListItemUpdateRequestDTO requestDTO, @AuthenticationPrincipal User user) {
 
-        ListItem updatedListItem = service.editList(id, requestDTO, user);
+        if (!listId.equals(requestDTO.listId())) {
+            throw new IllegalArgumentException(
+                    "Path listId (" + listId + ") does not match body listId (" + requestDTO.listId() + ")");
+        }
+
+        ListItem updatedListItem = service.editList(listId, id, requestDTO, user);
 
         ListItemResponseDTO responseDTO = listItemMapper.toResponseDTO(updatedListItem);
         return HttpResponseUtil.ok(responseDTO);

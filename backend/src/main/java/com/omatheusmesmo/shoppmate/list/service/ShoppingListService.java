@@ -38,11 +38,6 @@ public class ShoppingListService {
 
     public void isListValid(ShoppingList ShoppingList) {
         ShoppingList.checkName();
-        getOwnerId(ShoppingList);
-    }
-
-    private User getOwnerId(ShoppingList ShoppingList) {
-        return userService.findUser(ShoppingList.getOwner().getId());
     }
 
     public Optional<ShoppingList> findList(ShoppingList ShoppingList) {
@@ -75,6 +70,10 @@ public class ShoppingListService {
         // Verify access (owner or shared permission)
         findAndVerifyAccess(ShoppingList.getId(), currentLoggedUser);
 
+        return editListWithoutVerification(ShoppingList);
+    }
+
+    public ShoppingList editListWithoutVerification(ShoppingList ShoppingList) {
         isListValid(ShoppingList);
         auditService.setAuditData(ShoppingList, false);
         shoppingListRepository.save(ShoppingList);

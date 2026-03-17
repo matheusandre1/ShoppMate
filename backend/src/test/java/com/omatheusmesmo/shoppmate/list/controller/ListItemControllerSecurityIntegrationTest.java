@@ -87,6 +87,7 @@ class ListItemControllerSecurityIntegrationTest extends AbstractIntegrationTest 
     private User userA;
     private User userB;
     private ShoppingList userAList;
+    private ShoppingList userAList2;
     private ShoppingList userBList;
     private Item item;
     private ListItem userAListItem;
@@ -125,6 +126,10 @@ class ListItemControllerSecurityIntegrationTest extends AbstractIntegrationTest 
         ShoppingListRequestDTO dtoA = new ShoppingListRequestDTO("User A's Shopping List");
         ShoppingList entityA = listMapper.toEntity(dtoA, userA);
         userAList = shoppingListService.saveList(entityA);
+
+        ShoppingListRequestDTO dtoA2 = new ShoppingListRequestDTO("User A's Second Shopping List");
+        ShoppingList entityA2 = listMapper.toEntity(dtoA2, userA);
+        userAList2 = shoppingListService.saveList(entityA2);
 
         ShoppingListRequestDTO dtoB = new ShoppingListRequestDTO("User B's Shopping List");
         ShoppingList entityB = listMapper.toEntity(dtoB, userB);
@@ -305,5 +310,65 @@ class ListItemControllerSecurityIntegrationTest extends AbstractIntegrationTest 
         mockMvc.perform(
                 get("/lists/" + userAList.getId() + "/items").header("Authorization", "Bearer invalid.token.here"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testGetListItemWithMismatchedListIdIsRejected() throws Exception {
+        // User A tries to access their item (which belongs to userAList) but with userAList2 in the path
+        mockMvc.perform(get("/lists/" + userAList2.getId() + "/items/" + userAListItem.getId()).header("Authorization",
+                "Bearer " + tokenUserA)).andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof IllegalArgumentException))
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    void testPostListItemWithMismatchedPathListIdIsRejected() throws Exception {
+        // User A tries to add an item to their list, but with mismatched listId in path vs body
+        ListItemRequestDTO maliciousDTO = new ListItemRequestDTO(userAList2.getId(), item.getId(), 5, null);
+
+        mockMvc.perform(post("/lists/" + userAList.getId() + "/items").with(csrf())
+                .header("Authorization", "Bearer " + tokenUserA).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(maliciousDTO))).andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
+
+        // Verify no item was added to the wrong list
+        Iterable<ListItem> userAList2Items = listItemRepository.findAll();
+        long userAList2ItemCount = 0;
+        for (ListItem li : userAList2Items) {
+            if (li.getShoppList().getId().equals(userAList2.getId())) {
+                userAList2ItemCount++;
+            }
+        }
+        assertEquals(0, userAList2ItemCount, "User A's second list should have no items");
+    }
+
+    @Test
+    void testDeleteListItemWithMismatchedListIdIsRejected() throws Exception {
+        // User A tries to delete their item (which belongs to userAList) but with userAList2 in the path
+        mockMvc.perform(delete("/lists/" + userAList2.getId() + "/items/" + userAListItem.getId()).with(csrf())
+                .header("Authorization", "Bearer " + tokenUserA)).andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
+
+        // Verify item was not deleted
+        assertTrue(listItemRepository.findById(userAListItem.getId()).isPresent(),
+                "User A's list item should still exist");
+        assertFalse(listItemRepository.findById(userAListItem.getId()).get().getDeleted(),
+                "Item should not be marked as deleted");
+    }
+
+    @Test
+    void testUpdateListItemWithMismatchedPathListIdIsRejected() throws Exception {
+        // User A tries to update their item but with mismatched listId in path vs body
+        ListItemUpdateRequestDTO maliciousUpdate = new ListItemUpdateRequestDTO(userAList2.getId(), item.getId(), 99,
+                false, null);
+
+        mockMvc.perform(put("/lists/" + userAList.getId() + "/items/" + userAListItem.getId()).with(csrf())
+                .header("Authorization", "Bearer " + tokenUserA).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(maliciousUpdate))).andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
+
+        // Verify item was not modified
+        ListItem unchangedItem = listItemRepository.findById(userAListItem.getId()).orElseThrow();
+        assertEquals(2, unchangedItem.getQuantity(), "User A's item quantity should remain unchanged");
     }
 }

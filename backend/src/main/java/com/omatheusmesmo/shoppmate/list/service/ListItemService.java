@@ -73,14 +73,45 @@ public class ListItemService {
         return listItem;
     }
 
+    public ListItem findListItemById(Long listId, Long id, User user) {
+        ListItem listItem = ListItemRepository.findByIdAndDeletedFalseFetchShoppList(id)
+                .orElseThrow(() -> new NoSuchElementException("ListItem not found"));
+
+        shoppingListService.verifyOwnership(listId, user);
+
+        if (!listItem.getShoppList().getId().equals(listId)) {
+            throw new IllegalArgumentException("ListItem " + id + " does not belong to ShoppingList " + listId);
+        }
+
+        return listItem;
+    }
+
     public void removeList(Long id, User user) {
         ListItem deletedItem = findListItemById(id, user);
         auditService.softDelete(deletedItem);
         ListItemRepository.save(deletedItem);
     }
 
+    public void removeList(Long listId, Long id, User user) {
+        ListItem deletedItem = findListItemById(listId, id, user);
+        auditService.softDelete(deletedItem);
+        ListItemRepository.save(deletedItem);
+    }
+
     public ListItem editList(Long id, ListItemUpdateRequestDTO listItemUpdateRequestDTO, User user) {
         ListItem existingListItem = findListItemById(id, user);
+
+        existingListItem.setQuantity(listItemUpdateRequestDTO.quantity());
+        existingListItem.setPurchased(listItemUpdateRequestDTO.purchased());
+        existingListItem.setUnitPrice(listItemUpdateRequestDTO.unitPrice());
+
+        auditService.setAuditData(existingListItem, false);
+        ListItemRepository.save(existingListItem);
+        return existingListItem;
+    }
+
+    public ListItem editList(Long listId, Long id, ListItemUpdateRequestDTO listItemUpdateRequestDTO, User user) {
+        ListItem existingListItem = findListItemById(listId, id, user);
 
         existingListItem.setQuantity(listItemUpdateRequestDTO.quantity());
         existingListItem.setPurchased(listItemUpdateRequestDTO.purchased());
