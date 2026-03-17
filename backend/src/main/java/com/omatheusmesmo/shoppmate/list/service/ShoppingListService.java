@@ -1,11 +1,12 @@
 package com.omatheusmesmo.shoppmate.list.service;
 
-import com.omatheusmesmo.shoppmate.user.entity.User;
+import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListUpdateRequestDTO;
 import com.omatheusmesmo.shoppmate.list.entity.ShoppingList;
-
+import com.omatheusmesmo.shoppmate.list.mapper.ListMapper;
 import com.omatheusmesmo.shoppmate.list.repository.ShoppingListRepository;
-import com.omatheusmesmo.shoppmate.user.service.UserService;
 import com.omatheusmesmo.shoppmate.shared.service.AuditService;
+import com.omatheusmesmo.shoppmate.user.entity.User;
+import com.omatheusmesmo.shoppmate.user.service.UserService;
 import com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +23,14 @@ public class ShoppingListService {
 
     private final UserService userService;
 
+    private final ListMapper listMapper;
+
     public ShoppingListService(ShoppingListRepository shoppingListRepository, AuditService auditService,
-            UserService userService) {
+            UserService userService, ListMapper listMapper) {
         this.shoppingListRepository = shoppingListRepository;
         this.auditService = auditService;
         this.userService = userService;
+        this.listMapper = listMapper;
     }
 
     public ShoppingList saveList(ShoppingList ShoppingList) {
@@ -67,13 +71,18 @@ public class ShoppingListService {
     }
 
     public ShoppingList editList(ShoppingList ShoppingList, User currentLoggedUser) {
-        // Verify access (owner or shared permission)
         findAndVerifyAccess(ShoppingList.getId(), currentLoggedUser);
 
         return editListWithoutVerification(ShoppingList);
     }
 
-    public ShoppingList editListWithoutVerification(ShoppingList ShoppingList) {
+    public ShoppingList editList(Long id, ShoppingListUpdateRequestDTO dto, User currentLoggedUser) {
+        ShoppingList existingList = findAndVerifyAccess(id, currentLoggedUser);
+        listMapper.updateEntityFromDto(dto, existingList);
+        return editListWithoutVerification(existingList);
+    }
+
+    private ShoppingList editListWithoutVerification(ShoppingList ShoppingList) {
         isListValid(ShoppingList);
         auditService.setAuditData(ShoppingList, false);
         shoppingListRepository.save(ShoppingList);

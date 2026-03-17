@@ -106,40 +106,52 @@ class ListItemServiceTest {
 
     @Test
     void findListItem() {
-        when(listItemRepository.findByIdAndDeletedFalse(listItem.getId())).thenReturn(Optional.of(listItem));
+        when(shoppingListService.findAndVerifyAccess(shoppingList.getId(), user)).thenReturn(shoppingList);
+        when(listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(listItem.getId(),
+                shoppingList.getId())).thenReturn(Optional.of(listItem));
 
-        ListItem result = service.findListItemById(listItem.getId(), user);
+        ListItem result = service.findListItemById(shoppingList.getId(), listItem.getId(), user);
 
         assertNotNull(result);
 
-        verify(listItemRepository, times(1)).findByIdAndDeletedFalse(listItem.getId());
+        verify(shoppingListService, times(1)).findAndVerifyAccess(shoppingList.getId(), user);
+        verify(listItemRepository, times(1)).findByIdAndShoppListIdAndDeletedFalseFetchShoppList(listItem.getId(),
+                shoppingList.getId());
     }
 
     @Test
     void findListItemById() {
-        when(listItemRepository.findByIdAndDeletedFalse(listItem.getId())).thenReturn(Optional.of(listItem));
+        when(shoppingListService.findAndVerifyAccess(shoppingList.getId(), user)).thenReturn(shoppingList);
+        when(listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(listItem.getId(),
+                shoppingList.getId())).thenReturn(Optional.of(listItem));
 
-        ListItem result = service.findListItemById(listItem.getId(), user);
+        ListItem result = service.findListItemById(shoppingList.getId(), listItem.getId(), user);
 
         assertNotNull(result);
 
-        verify(listItemRepository, times(1)).findByIdAndDeletedFalse(listItem.getId());
+        verify(shoppingListService, times(1)).findAndVerifyAccess(shoppingList.getId(), user);
+        verify(listItemRepository, times(1)).findByIdAndShoppListIdAndDeletedFalseFetchShoppList(listItem.getId(),
+                shoppingList.getId());
     }
 
     @Test
     void findListItemById_WhenItemNotFound() {
-        when(listItemRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.empty());
+        when(shoppingListService.findAndVerifyAccess(shoppingList.getId(), user)).thenReturn(shoppingList);
+        when(listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(anyLong(), anyLong()))
+                .thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> service.findListItemById(999L, user));
+        assertThrows(NoSuchElementException.class, () -> service.findListItemById(shoppingList.getId(), 999L, user));
 
         verify(listItemRepository, never()).save(any());
     }
 
     @Test
     void removeList_Ok() {
-        when(listItemRepository.findByIdAndDeletedFalse(listItem.getId())).thenReturn(Optional.of(listItem));
+        when(shoppingListService.findAndVerifyAccess(shoppingList.getId(), user)).thenReturn(shoppingList);
+        when(listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(listItem.getId(),
+                shoppingList.getId())).thenReturn(Optional.of(listItem));
 
-        assertDoesNotThrow(() -> service.removeList(listItem.getId(), user));
+        assertDoesNotThrow(() -> service.removeList(shoppingList.getId(), listItem.getId(), user));
 
         verify(listItemRepository, times(1)).save(listItem);
         verify(auditService, times(1)).softDelete(listItem);
@@ -147,9 +159,11 @@ class ListItemServiceTest {
 
     @Test
     void removeList_ItemNotFound() {
-        when(listItemRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.empty());
+        when(shoppingListService.findAndVerifyAccess(shoppingList.getId(), user)).thenReturn(shoppingList);
+        when(listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(anyLong(), anyLong()))
+                .thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> service.removeList(999L, user));
+        assertThrows(NoSuchElementException.class, () -> service.removeList(shoppingList.getId(), 999L, user));
 
         verify(listItemRepository, never()).save(any());
         verify(auditService, never()).softDelete(any());
@@ -158,9 +172,11 @@ class ListItemServiceTest {
     @Test
     void editList_Ok() {
         ListItemUpdateRequestDTO updateDTO = new ListItemUpdateRequestDTO(1L, 1L, 3, true, BigDecimal.valueOf(10.0));
-        when(listItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(listItem));
+        when(shoppingListService.findAndVerifyAccess(shoppingList.getId(), user)).thenReturn(shoppingList);
+        when(listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(listItem.getId(),
+                shoppingList.getId())).thenReturn(Optional.of(listItem));
 
-        ListItem result = service.editList(1L, updateDTO, user);
+        ListItem result = service.editList(shoppingList.getId(), listItem.getId(), updateDTO, user);
 
         assertNotNull(result);
         assertEquals(3, result.getQuantity());
@@ -174,11 +190,13 @@ class ListItemServiceTest {
     @Test
     void editList_WhenListItemNotFound() {
         ListItemUpdateRequestDTO updateDTO = new ListItemUpdateRequestDTO(1L, 1L, 3, true, BigDecimal.valueOf(20.0));
-        when(listItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
+        when(shoppingListService.findAndVerifyAccess(shoppingList.getId(), user)).thenReturn(shoppingList);
+        when(listItemRepository.findByIdAndShoppListIdAndDeletedFalseFetchShoppList(anyLong(), anyLong()))
+                .thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> service.editList(1L, updateDTO, user));
+        assertThrows(NoSuchElementException.class, () -> service.editList(shoppingList.getId(), 1L, updateDTO, user));
 
-        verify(listItemRepository, times(1)).findByIdAndDeletedFalse(1L);
+        verify(listItemRepository, times(1)).findByIdAndShoppListIdAndDeletedFalseFetchShoppList(anyLong(), anyLong());
     }
 
     @Test

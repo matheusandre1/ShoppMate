@@ -79,13 +79,7 @@ public class ShoppingListController {
             @Valid @RequestBody ShoppingListUpdateRequestDTO requestDTO,
             @AuthenticationPrincipal User user) {
 
-        ShoppingList existingList = service.findAndVerifyAccess(id, user);
-
-        listMapper.updateEntityFromDto(requestDTO, existingList);
-
-        // editList verifies access again internally, but we already verified above
-        // Pass null to skip redundant verification in editList
-        ShoppingList updatedList = service.editListWithoutVerification(existingList);
+        ShoppingList updatedList = service.editList(id, requestDTO, user);
 
         ShoppingListResponseDTO responseDTO = listMapper.toResponseDTO(updatedList);
 

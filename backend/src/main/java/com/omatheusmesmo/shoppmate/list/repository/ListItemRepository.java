@@ -20,4 +20,9 @@ public interface ListItemRepository extends JpaRepository<ListItem, Long> {
     @Query("SELECT li FROM ListItem li JOIN FETCH li.shoppList WHERE li.id = :id AND li.deleted = false")
     Optional<ListItem> findByIdAndDeletedFalseFetchShoppList(Long id);
 
+    Optional<ListItem> findByIdAndShoppListIdAndDeletedFalse(Long id, Long shoppListId);
+
+    @Query("SELECT li FROM ListItem li JOIN FETCH li.shoppList WHERE li.id = :id AND li.shoppList.id = :shoppListId AND li.deleted = false")
+    Optional<ListItem> findByIdAndShoppListIdAndDeletedFalseFetchShoppList(Long id, Long shoppListId);
+
 }
