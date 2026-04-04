@@ -52,16 +52,14 @@ public class ShoppingListController {
 
     @Operation(summary = "Add a new Shopping List")
     @PostMapping
-    public ResponseEntity<ShoppingListResponseDTO> addShoppingList(
-        @Valid @RequestBody ShoppingListRequestDTO dto,
-        @AuthenticationPrincipal User user
-    ) {
+    public ResponseEntity<ShoppingListResponseDTO> addShoppingList(@Valid @RequestBody ShoppingListRequestDTO dto,
+            @AuthenticationPrincipal User user) {
         ShoppingList shoppingList = listMapper.toEntity(dto, user);
         ShoppingList savedList = service.saveList(shoppingList);
         ShoppingListResponseDTO responseDTO = listMapper.toResponseDTO(savedList);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(savedList.getId())
-            .toUri();
+                .toUri();
 
         return ResponseEntity.created(location).body(responseDTO);
     }
@@ -76,8 +74,7 @@ public class ShoppingListController {
     @Operation(summary = "Update a Shopping List")
     @PutMapping("/{id}")
     public ResponseEntity<ShoppingListResponseDTO> updateShoppingList(@PathVariable Long id,
-            @Valid @RequestBody ShoppingListUpdateRequestDTO requestDTO,
-            @AuthenticationPrincipal User user) {
+            @Valid @RequestBody ShoppingListUpdateRequestDTO requestDTO, @AuthenticationPrincipal User user) {
 
         ShoppingList updatedList = service.editList(id, requestDTO, user);
 

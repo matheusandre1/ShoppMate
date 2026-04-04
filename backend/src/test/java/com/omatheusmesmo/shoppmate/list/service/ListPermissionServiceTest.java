@@ -94,10 +94,10 @@ class ListPermissionServiceTest {
         when(userService.findUserById(requestDTO.idUser())).thenReturn(targetUser);
         when(shoppingListService.findListById(requestDTO.idList())).thenReturn(shoppingList);
 
-        com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException exception =
-            assertThrows(com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException.class, () -> {
-            listPermissionService.addListPermission(requestDTO, requester);
-        });
+        com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException exception = assertThrows(
+                com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException.class, () -> {
+                    listPermissionService.addListPermission(requestDTO, requester);
+                });
 
         assertTrue(exception.getMessage().contains("does not have permission to grant access"));
         verify(ListPermissionRepository, never()).save(any(ListPermission.class));

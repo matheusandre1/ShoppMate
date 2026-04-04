@@ -106,25 +106,25 @@ class ItemServiceTest {
         Long id = 1L;
         Item item = createSampleItem();
         item.setId(id);
-        when(itemRepository.findById(id)).thenReturn(Optional.of(item));
+        when(itemRepository.findByIdWithRelations(id)).thenReturn(Optional.of(item));
 
         // Act
         Item result = itemService.findById(id);
 
         // Assert
         assertEquals(item, result);
-        verify(itemRepository, times(1)).findById(id);
+        verify(itemRepository, times(1)).findByIdWithRelations(id);
     }
 
     @Test
     void findItemById_NonExistingId_ThrowsNoSuchElementException() {
         // Arrange
         Long id = 1L;
-        when(itemRepository.findById(id)).thenReturn(Optional.empty());
+        when(itemRepository.findByIdWithRelations(id)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(NoSuchElementException.class, () -> itemService.findById(id));
-        verify(itemRepository, times(1)).findById(id);
+        verify(itemRepository, times(1)).findByIdWithRelations(id);
     }
 
     @Test
@@ -133,13 +133,13 @@ class ItemServiceTest {
         Long id = 1L;
         Item item = createSampleItem();
         item.setId(id);
-        when(itemRepository.findById(id)).thenReturn(Optional.of(item));
+        when(itemRepository.findByIdWithRelations(id)).thenReturn(Optional.of(item));
 
         // Act
         itemService.removeItem(id);
 
         // Assert
-        verify(itemRepository, times(1)).findById(id);
+        verify(itemRepository, times(1)).findByIdWithRelations(id);
         verify(itemRepository, times(1)).deleteById(id);
     }
 
@@ -147,11 +147,11 @@ class ItemServiceTest {
     void removeItem_NonExistingId_ThrowsNoSuchElementException() {
         // Arrange
         Long id = 1L;
-        when(itemRepository.findById(id)).thenReturn(Optional.empty());
+        when(itemRepository.findByIdWithRelations(id)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(NoSuchElementException.class, () -> itemService.removeItem(id));
-        verify(itemRepository, times(1)).findById(id);
+        verify(itemRepository, times(1)).findByIdWithRelations(id);
         verify(itemRepository, never()).deleteById(any());
     }
 
@@ -159,7 +159,7 @@ class ItemServiceTest {
     void editItem_ExistingItem_ReturnsEditedItem() {
         // Arrange
         Item item = createSampleItem();
-        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+        when(itemRepository.findByIdWithRelations(item.getId())).thenReturn(Optional.of(item));
         when(itemRepository.save(item)).thenReturn(item);
 
         // Act
@@ -168,7 +168,7 @@ class ItemServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(item, result);
-        verify(itemRepository, times(1)).findById(item.getId());
+        verify(itemRepository, times(1)).findByIdWithRelations(item.getId());
         verify(categoryService, times(1)).isCategoryValid(item.getCategory());
         verify(unitService, times(1)).isUnitValid(item.getUnit());
         verify(auditService, times(1)).setAuditData(item, false);
@@ -179,7 +179,7 @@ class ItemServiceTest {
     void editItem_NonExistingItem_ThrowsNoSuchElementException() {
         // Arrange
         Item item = createSampleItem();
-        when(itemRepository.findById(item.getId())).thenReturn(Optional.empty());
+        when(itemRepository.findByIdWithRelations(item.getId())).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(NoSuchElementException.class, () -> itemService.editItem(item));

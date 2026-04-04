@@ -297,7 +297,7 @@ class ListItemControllerSecurityIntegrationTest extends AbstractIntegrationTest 
     @Test
     void testUserCannotAccessItemsFromNonExistentList() throws Exception {
         mockMvc.perform(get("/lists/99999/items").header("Authorization", "Bearer " + tokenUserA))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isNotFound());
     }
 
     @Test

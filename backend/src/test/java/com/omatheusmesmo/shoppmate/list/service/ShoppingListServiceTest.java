@@ -93,7 +93,7 @@ class ShoppingListServiceTest {
 
     @Test
     void testRemoveListThrowsExceptionWhenNotFound() {
-        when(shoppingListRepository.findById(999L)).thenReturn(Optional.empty());
+        when(shoppingListRepository.findByIdAndUserId(999L, testUser.getId())).thenReturn(Optional.empty());
 
         assertThrows(com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException.class,
                 () -> shoppingListService.removeList(999L, testUser));

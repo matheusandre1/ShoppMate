@@ -45,8 +45,7 @@ public class ListPermissionController {
     @Operation(summary = "Add a new ListPermission")
     @PostMapping
     public ResponseEntity<ListPermissionResponseDTO> addListPermission(
-            @Valid @RequestBody ListPermissionRequestDTO requestDTO,
-            @AuthenticationPrincipal User requester) {
+            @Valid @RequestBody ListPermissionRequestDTO requestDTO, @AuthenticationPrincipal User requester) {
         ListPermission addedListPermission = service.addListPermission(requestDTO, requester);
         ListPermissionResponseDTO responseDTO = listPermissionMapper.toResponseDTO(addedListPermission);
 
@@ -58,8 +57,7 @@ public class ListPermissionController {
 
     @Operation(summary = "Delete a ListPermission by id")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteListPermission(@PathVariable Long id,
-            @AuthenticationPrincipal User user) {
+    public ResponseEntity<Void> deleteListPermission(@PathVariable Long id, @AuthenticationPrincipal User user) {
         service.removeList(id, user);
         return HttpResponseUtil.noContent();
     }
@@ -67,8 +65,7 @@ public class ListPermissionController {
     @Operation(summary = "Update a ListPermission")
     @PutMapping("/{id}")
     public ResponseEntity<ListPermissionResponseDTO> updateListPermission(@PathVariable Long id,
-            @Valid @RequestBody ListPermissionUpdateRequestDTO requestDTO,
-            @AuthenticationPrincipal User user) {
+            @Valid @RequestBody ListPermissionUpdateRequestDTO requestDTO, @AuthenticationPrincipal User user) {
 
         ListPermission updatedListPermission = service.editList(id, requestDTO, user);
         ListPermissionResponseDTO responseDTO = listPermissionMapper.toResponseDTO(updatedListPermission);

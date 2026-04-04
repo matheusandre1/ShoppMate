@@ -98,9 +98,13 @@ public class ShoppingListService {
     }
 
     public ShoppingList findAndVerifyAccess(Long listId, User user) {
-        // Unified fetch & verify: Single query to check existence AND permissions
-        return shoppingListRepository.findByIdAndUserId(listId, user.getId()).orElseThrow(
-                () -> new ResourceOwnershipException("Access Denied: You do not have permission to access this list."));
+        ShoppingList shoppingList = findListById(listId);
+
+        if (!shoppingList.getOwner().getId().equals(user.getId())) {
+            throw new ResourceOwnershipException("Access Denied: You do not have permission to access this list.");
+        }
+
+        return shoppingList;
     }
 
     public void verifyOwnership(Long listId, User user) {
