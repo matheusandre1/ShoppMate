@@ -102,4 +102,12 @@ public class ShoppingListService {
         return shoppingListRepository.findByIdAndUserId(listId, user.getId()).orElseThrow(
                 () -> new ResourceOwnershipException("Access Denied: You do not have permission to access this list."));
     }
+
+    public void verifyOwnership(Long listId, User user) {
+        ShoppingList shoppingList = findListById(listId);
+
+        if (!shoppingList.getOwner().getId().equals(user.getId())) {
+            throw new ResourceOwnershipException("You do not have permission to access this resource");
+        }
+    }
 }
