@@ -30,7 +30,6 @@ public class User extends BaseAuditableEntity implements UserDetails {
     private String password;
     private String role = "USER";
 
-<<<<<<< HEAD
     public User(RegisterUserDTO dto) {
         this.email = dto.email();
         this.fullName = dto.fullName();
@@ -66,5 +65,4 @@ public class User extends BaseAuditableEntity implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-}
 }
