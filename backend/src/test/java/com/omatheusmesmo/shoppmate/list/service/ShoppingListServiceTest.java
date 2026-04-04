@@ -95,8 +95,7 @@ class ShoppingListServiceTest {
     void testRemoveListThrowsExceptionWhenNotFound() {
         when(shoppingListRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class,
-                () -> shoppingListService.removeList(999L, testUser));
+        assertThrows(NoSuchElementException.class, () -> shoppingListService.removeList(999L, testUser));
 
         verify(shoppingListRepository, never()).deleteById(999L);
     }
