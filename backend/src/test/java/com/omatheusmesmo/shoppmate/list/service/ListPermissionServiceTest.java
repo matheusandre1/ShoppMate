@@ -230,13 +230,18 @@ class ListPermissionServiceTest {
     void findAll_MultiplePermissions_ReturnsAllPermissions() {
         User owner = new User();
         owner.setId(1L);
+        ShoppingList shoppingList = new ShoppingList();
+        shoppingList.setId(1L);
+        shoppingList.setOwner(owner);
+
         ListPermission permission1 = createSamplePermission();
-        permission1.getShoppingList().setOwner(owner);
+        permission1.setShoppingList(shoppingList);
         ListPermission permission2 = createSamplePermission();
-        permission2.getShoppingList().setOwner(owner);
+        permission2.setShoppingList(shoppingList);
         List<ListPermission> permissions = Arrays.asList(permission1, permission2);
+
+        when(shoppingListService.findAndVerifyAccess(1L, owner)).thenReturn(shoppingList);
         when(ListPermissionRepository.findByShoppingListIdAndDeletedFalse(1L)).thenReturn(permissions);
-        doNothing().when(shoppingListService).verifyOwnership(anyLong(), any(User.class));
 
         List<ListPermission> result = listPermissionService.findAllPermissionsByListId(1L, owner);
 
@@ -244,7 +249,7 @@ class ListPermissionServiceTest {
         assertTrue(result.contains(permission1));
         assertTrue(result.contains(permission2));
         verify(ListPermissionRepository, times(1)).findByShoppingListIdAndDeletedFalse(1L);
-        verify(shoppingListService, times(1)).verifyOwnership(1L, owner);
+        verify(shoppingListService, times(1)).findAndVerifyAccess(1L, owner);
     }
 
     private ListPermission createSamplePermission() {

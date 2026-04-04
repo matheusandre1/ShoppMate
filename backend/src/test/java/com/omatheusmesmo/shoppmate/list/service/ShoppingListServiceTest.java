@@ -84,7 +84,7 @@ class ShoppingListServiceTest {
 
     @Test
     void testRemoveListSuccess() {
-        when(shoppingListRepository.findByIdAndUserId(1L, testUser.getId())).thenReturn(Optional.of(testList));
+        when(shoppingListRepository.findById(1L)).thenReturn(Optional.of(testList));
 
         assertDoesNotThrow(() -> shoppingListService.removeList(1L, testUser));
 
@@ -93,9 +93,9 @@ class ShoppingListServiceTest {
 
     @Test
     void testRemoveListThrowsExceptionWhenNotFound() {
-        when(shoppingListRepository.findByIdAndUserId(999L, testUser.getId())).thenReturn(Optional.empty());
+        when(shoppingListRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException.class,
+        assertThrows(NoSuchElementException.class,
                 () -> shoppingListService.removeList(999L, testUser));
 
         verify(shoppingListRepository, never()).deleteById(999L);
@@ -111,7 +111,7 @@ class ShoppingListServiceTest {
     @Test
     void testEditListSuccess() {
         testList.setName("Supermercado Atualizado");
-        when(shoppingListRepository.findByIdAndUserId(1L, testUser.getId())).thenReturn(Optional.of(testList));
+        when(shoppingListRepository.findById(1L)).thenReturn(Optional.of(testList));
 
         ShoppingList result = shoppingListService.editList(testList, testUser);
 

@@ -183,7 +183,7 @@ class ItemServiceTest {
 
         // Act & Assert
         assertThrows(NoSuchElementException.class, () -> itemService.editItem(item));
-        verify(itemRepository, times(1)).findById(item.getId());
+        verify(itemRepository, times(1)).findByIdWithRelations(item.getId());
         verify(itemRepository, never()).save(any());
     }
 
