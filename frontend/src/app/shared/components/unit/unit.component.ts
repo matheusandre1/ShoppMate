@@ -3,7 +3,6 @@ import {
   Component,
   inject,
   OnInit,
-  inject,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
