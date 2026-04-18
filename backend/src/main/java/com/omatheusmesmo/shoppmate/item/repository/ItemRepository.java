@@ -17,7 +17,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("SELECT i FROM Item i LEFT JOIN FETCH i.category LEFT JOIN FETCH i.unit WHERE i.id = :id AND i.deleted = false")
     Optional<Item> findByIdWithRelations(@Param("id") Long id);
-  
+
     @EntityGraph(attributePaths = { "category", "unit" })
     List<Item> findAll();
 

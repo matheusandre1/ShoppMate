@@ -71,8 +71,8 @@ public class ListPermissionService {
         }
     }
 
-    public ListPermission findListUserPermissionById(Long id) {
-        return listPermissionRepository.findByIdAndDeletedFalse(id)
+    public ListPermission findListUserPermissionById(Long id, User user) {
+        ListPermission listPermission = listPermissionRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NoSuchElementException("ListPermission not found"));
 
         if (!listPermission.getShoppingList().getOwner().getId().equals(user.getId())) {
