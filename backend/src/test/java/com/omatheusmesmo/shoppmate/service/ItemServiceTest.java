@@ -78,7 +78,7 @@ class ItemServiceTest {
     void findItem_ExistingItem_ReturnsItem() {
         // Arrange
         Item item = createSampleItem();
-        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+        when(itemRepository.findByIdAndDeletedFalse(item.getId())).thenReturn(Optional.of(item));
 
         // Act
         Optional<Item> result = itemService.findItem(item);
@@ -86,18 +86,18 @@ class ItemServiceTest {
         // Assert
         assertTrue(result.isPresent());
         assertEquals(item, result.get());
-        verify(itemRepository, times(1)).findById(item.getId());
+        verify(itemRepository, times(1)).findByIdAndDeletedFalse(item.getId());
     }
 
     @Test
     void findItem_NonExistingItem_ThrowsNoSuchElementException() {
         // Arrange
         Item item = createSampleItem();
-        when(itemRepository.findById(item.getId())).thenReturn(Optional.empty());
+        when(itemRepository.findByIdAndDeletedFalse(item.getId())).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(NoSuchElementException.class, () -> itemService.findItem(item));
-        verify(itemRepository, times(1)).findById(item.getId());
+        verify(itemRepository, times(1)).findByIdAndDeletedFalse(item.getId());
     }
 
     @Test
@@ -193,7 +193,7 @@ class ItemServiceTest {
         Item item1 = createSampleItem();
         Item item2 = createSampleItem();
         List<Item> items = Arrays.asList(item1, item2);
-        when(itemRepository.findAll()).thenReturn(items);
+        when(itemRepository.findAllByDeletedFalse()).thenReturn(items);
 
         // Act
         List<Item> result = itemService.findAll();
@@ -202,7 +202,7 @@ class ItemServiceTest {
         assertEquals(2, result.size());
         assertTrue(result.contains(item1));
         assertTrue(result.contains(item2));
-        verify(itemRepository, times(1)).findAll();
+        verify(itemRepository, times(1)).findAllByDeletedFalse();
     }
 
     private Item createSampleItem() {

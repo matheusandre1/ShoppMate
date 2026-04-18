@@ -44,7 +44,7 @@ public class ItemService {
     }
 
     public Optional<Item> findItem(Item item) {
-        Optional<Item> foundItem = itemRepository.findById(item.getId());
+        Optional<Item> foundItem = itemRepository.findByIdAndDeletedFalse(item.getId());
         if (foundItem.isPresent()) {
             return foundItem;
         } else {
@@ -73,6 +73,6 @@ public class ItemService {
     }
 
     public List<Item> findAll() {
-        return itemRepository.findAll();
+        return itemRepository.findAllByDeletedFalse();
     }
 }
