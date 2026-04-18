@@ -1,12 +1,14 @@
 package com.omatheusmesmo.shoppmate.list.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.omatheusmesmo.shoppmate.auth.service.CustomUserDetailsService;
 import com.omatheusmesmo.shoppmate.auth.service.JwtService;
 import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListRequestDTO;
 import com.omatheusmesmo.shoppmate.list.dtos.ShoppingListResponseDTO;
 import com.omatheusmesmo.shoppmate.list.entity.ShoppingList;
 import com.omatheusmesmo.shoppmate.list.mapper.ListMapper;
 import com.omatheusmesmo.shoppmate.list.service.ShoppingListService;
+import com.omatheusmesmo.shoppmate.shared.test.annotation.WithMockCustomUser;
 import com.omatheusmesmo.shoppmate.user.dtos.UserResponseDTO;
 import com.omatheusmesmo.shoppmate.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,14 +18,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -47,7 +48,7 @@ class ShoppingListControllerTest {
     private JwtService jwtService;
 
     @MockBean
-    private UserDetailsService userDetailsService;
+    private CustomUserDetailsService userDetailsService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -57,25 +58,18 @@ class ShoppingListControllerTest {
 
     @BeforeEach
     void setUp() {
-        User owner = new User();
-        owner.setId(1L);
-        owner.setEmail("owner@example.com");
-        owner.setFullName("Owner");
-        owner.setPassword("pass");
-
         shoppingList = new ShoppingList();
         shoppingList.setId(1L);
         shoppingList.setName("Weekly");
-        shoppingList.setOwner(owner);
 
-        responseDTO = new ShoppingListResponseDTO(1L, "Weekly", new UserResponseDTO(1L, "Owner", "owner@example.com"),
-                BigDecimal.valueOf(1.0));
+        responseDTO = new ShoppingListResponseDTO(1L, "Weekly",
+                new UserResponseDTO(1L, "Test User", "test@example.com"), BigDecimal.valueOf(1.0));
     }
 
     @Test
-    @WithMockUser
+    @WithMockCustomUser
     void getAllShoppingLists_ExistingLists_ReturnsOkWithShoppingLists() throws Exception {
-        when(shoppingListService.findAll()).thenReturn(List.of(shoppingList));
+        when(shoppingListService.findAllByUser(any(User.class))).thenReturn(List.of(shoppingList));
         when(listMapper.toResponseDTO(any(ShoppingList.class))).thenReturn(responseDTO);
 
         mockMvc.perform(get("/lists")).andExpect(status().isOk())
@@ -83,10 +77,10 @@ class ShoppingListControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockCustomUser
     void addShoppingList_ValidRequest_ReturnsCreatedWithShoppingList() throws Exception {
-        ShoppingListRequestDTO requestDTO = new ShoppingListRequestDTO("Weekly", 1L);
-        when(listMapper.toEntity(any(ShoppingListRequestDTO.class))).thenReturn(shoppingList);
+        ShoppingListRequestDTO requestDTO = new ShoppingListRequestDTO("Weekly");
+        when(listMapper.toEntity(any(ShoppingListRequestDTO.class), any(User.class))).thenReturn(shoppingList);
         when(shoppingListService.saveList(any(ShoppingList.class))).thenReturn(shoppingList);
         when(listMapper.toResponseDTO(any(ShoppingList.class))).thenReturn(responseDTO);
 

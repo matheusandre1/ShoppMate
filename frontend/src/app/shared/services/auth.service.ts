@@ -82,20 +82,4 @@ export class AuthService {
   private hasToken(): boolean {
     return !!this.getToken();
   }
-
-  getCurrentUserId(): number | null {
-    const token = this.getToken();
-    if (!token) return null;
-
-    try {
-      const payload = token.split('.')[1];
-      const decoded = JSON.parse(atob(payload));
-      // Try to find ID in common claims: sub, userId, id
-      const userId = decoded.userId || decoded.id || decoded.sub;
-      return userId ? Number(userId) : null;
-    } catch (e) {
-      console.error('Error decoding token:', e);
-      return null;
-    }
-  }
 }

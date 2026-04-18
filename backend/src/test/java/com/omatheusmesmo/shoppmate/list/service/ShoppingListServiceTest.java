@@ -86,7 +86,7 @@ class ShoppingListServiceTest {
     void testRemoveListSuccess() {
         when(shoppingListRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(testList));
 
-        assertDoesNotThrow(() -> shoppingListService.removeList(1L));
+        assertDoesNotThrow(() -> shoppingListService.removeList(1L, testUser));
 
         verify(shoppingListRepository, times(1)).deleteById(1L);
     }
@@ -95,7 +95,7 @@ class ShoppingListServiceTest {
     void testRemoveListThrowsExceptionWhenNotFound() {
         when(shoppingListRepository.findByIdAndDeletedFalse(999L)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> shoppingListService.removeList(999L));
+        assertThrows(NoSuchElementException.class, () -> shoppingListService.removeList(999L, testUser));
 
         verify(shoppingListRepository, never()).deleteById(999L);
     }
@@ -112,7 +112,7 @@ class ShoppingListServiceTest {
         testList.setName("Supermercado Atualizado");
         when(shoppingListRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(testList));
 
-        ShoppingList result = shoppingListService.editList(testList);
+        ShoppingList result = shoppingListService.editList(testList, testUser);
 
         assertNotNull(result);
         assertEquals("Supermercado Atualizado", result.getName());

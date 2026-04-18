@@ -1,8 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -124,7 +124,7 @@ export class UnitComponent implements OnInit {
         message: 'Tem certeza que deseja excluir esta unidade?',
         confirmText: 'Excluir',
       })
-      .subscribe((confirmed) => {
+      .subscribe((confirmed: boolean) => {
         if (!confirmed) return;
 
         this.unitService.deleteUnit(id).subscribe({
