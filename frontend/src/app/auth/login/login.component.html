@@ -43,6 +43,7 @@
               mat-icon-button
               matSuffix
               (click)="hidePassword.set(!hidePassword())"
+              aria-label="Toggle password visibility"
             >
               <mat-icon>{{
                 hidePassword() ? "visibility_off" : "visibility"
