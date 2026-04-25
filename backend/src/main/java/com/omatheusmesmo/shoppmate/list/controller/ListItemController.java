@@ -1,5 +1,24 @@
 package com.omatheusmesmo.shoppmate.list.controller;
 
+import java.net.URI;
+import java.util.List;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import io.swagger.v3.oas.annotations.Operation;
+
 import com.omatheusmesmo.shoppmate.list.dtos.ListItemRequestDTO;
 import com.omatheusmesmo.shoppmate.list.dtos.ListItemResponseDTO;
 import com.omatheusmesmo.shoppmate.list.dtos.ListItemSummaryDTO;
@@ -9,15 +28,6 @@ import com.omatheusmesmo.shoppmate.list.mapper.ListItemMapper;
 import com.omatheusmesmo.shoppmate.list.service.ListItemService;
 import com.omatheusmesmo.shoppmate.user.entity.User;
 import com.omatheusmesmo.shoppmate.utils.HttpResponseUtil;
-import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/lists/{listId}/items")
