@@ -1,18 +1,23 @@
 package com.omatheusmesmo.shoppmate.user.entity;
 
-import com.omatheusmesmo.shoppmate.shared.domain.BaseAuditableEntity;
-import com.omatheusmesmo.shoppmate.user.dtos.RegisterUserDTO;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.Collection;
+import java.util.Collections;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import com.omatheusmesmo.shoppmate.shared.domain.BaseAuditableEntity;
+import com.omatheusmesmo.shoppmate.user.dtos.RegisterUserDTO;
 
 @AllArgsConstructor
 @NoArgsConstructor

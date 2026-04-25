@@ -10,7 +10,6 @@ import com.omatheusmesmo.shoppmate.list.repository.ListItemRepository;
 import com.omatheusmesmo.shoppmate.item.service.ItemService;
 import com.omatheusmesmo.shoppmate.shared.service.AuditService;
 import com.omatheusmesmo.shoppmate.user.entity.User;
-import com.omatheusmesmo.shoppmate.utils.exception.ResourceOwnershipException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

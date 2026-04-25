@@ -1,9 +1,11 @@
 package com.omatheusmesmo.shoppmate.unit.entity;
 
-import com.omatheusmesmo.shoppmate.shared.domain.DomainEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+
+import com.omatheusmesmo.shoppmate.shared.domain.DomainEntity;
 
 @Entity
 @Table(name = "units")

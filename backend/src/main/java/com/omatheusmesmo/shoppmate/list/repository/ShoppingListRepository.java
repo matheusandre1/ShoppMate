@@ -10,9 +10,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
-
 @Repository
 public interface ShoppingListRepository extends JpaRepository<ShoppingList, Long> {
     @EntityGraph(attributePaths = { "owner" })
